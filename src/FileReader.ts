@@ -19,12 +19,16 @@ export class FileSystem {
     const dirPath = path.join(this.rootPath, this.cwd);
     const entries = await fs.readdir(dirPath, { withFileTypes: true });
     return entries.map(entry => {
-      return `${entry.name} ${entry.isDirectory() ? "<DIR>" : "<FILE>"}: `;
+      return {
+        name: entry.name,
+        isDirectory: entry.isDirectory(),
+      }
     });
   }
 
   async changeDirectory(relativePath: string) {
-    this.cwd = path.resolve(this.rootPath, path.join(this.cwd, relativePath))
+    console.log("cd: ", relativePath)
+    this.cwd = path.join(this.cwd, relativePath)
     return this.list()
   }
 }
