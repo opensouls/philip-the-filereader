@@ -1,4 +1,4 @@
-import { ChatMessageRoleEnum, PerceptionProcessor } from "@opensouls/engine"
+import { ChatMessageRoleEnum, PerceptionProcessor, indentNicely, useSoulMemory } from "@opensouls/engine"
 
 // This is the default percpetion processor extracted from the soul engine itself.
 // if you do not specify a perception processor in your soul, then this is what's used.
@@ -10,6 +10,8 @@ function safeName(name?: string) {
 const DEFAULT_PREMONITION = "remembered its time to"
 
 const defaultPerceptionProcessor: PerceptionProcessor = async ({ perception, workingMemory, currentProcess }) => {
+  const notes = useSoulMemory("notes", "Just started")
+
   const content = perception.internal ?
   `${perception.name} ${perception.premonition || DEFAULT_PREMONITION} ${perception.action} ${perception.content}` :
   `${perception.name} ${perception.action}: ${perception.content}`
@@ -23,6 +25,17 @@ const defaultPerceptionProcessor: PerceptionProcessor = async ({ perception, wor
       timestamp: perception._timestamp
     }
   })
+
+  const existingSystem = workingMemory.at(0)
+  workingMemory = workingMemory.slice(0,0).withMemory({
+    ...existingSystem,
+    content: indentNicely`
+      ${existingSystem.content}
+      
+      ## Progress Towards Goal
+      ${notes.current}
+    `
+  }).concat(workingMemory.slice(1))
 
   return [workingMemory, currentProcess]
 }

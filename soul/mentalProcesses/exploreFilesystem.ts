@@ -5,6 +5,7 @@ import { ToolPossibilities, toolChooser } from "../cognitiveFunctions/toolChoose
 import readsAFile from "./readsAFile.js";
 import chats from "./chat.js";
 import { updateNotes } from "../cognitiveFunctions/notes.js";
+import internalMonologue from "../cognitiveSteps/internalMonologue.js";
 
 const tools: ToolPossibilities = {
   "cd": {
@@ -28,7 +29,7 @@ const tools: ToolPossibilities = {
 }
 
 const exploreFilesystem: MentalProcess = async ({ workingMemory }) => {
-  const { speak, dispatch, log  } = useActions()
+  const { speak, dispatch, log } = useActions()
   const { invocationCount } = useProcessManager()
   // const { invokingPerception } = usePerceptions()
   // const latestList = useSoulMemory<ListEntry[]>("latestList", [])
@@ -42,14 +43,17 @@ const exploreFilesystem: MentalProcess = async ({ workingMemory }) => {
     return workingMemory.withMonologue("Philip lists the files in the current directory.")
   }
 
-  // if (invokingPerception?.action === "listed") {
-  //   log("setting latest list")
-  //   latestList.current = [...invokingPerception._metadata!.list as ListEntry[]]
-  // }
+  const [withMonologue, monologue] = await internalMonologue(
+    workingMemory,
+    "What are Bob's takeaways from that screen related to their goal?",
+    {
+      model: "gpt-4-turbo",
+    }
+  )
 
   log("making a comment")
   const [withDialog, resp] = await externalDialog(
-    workingMemory,
+    withMonologue,
     "Make a comment on what they are seeing.",
     { model: "quality" }
   );
@@ -59,11 +63,22 @@ const exploreFilesystem: MentalProcess = async ({ workingMemory }) => {
 
   log("choosing tools")
   const [toolMemory, toolChoice, args] = await toolChooser(withDialog, tools)
-  
+
   log("Tool choice: ", toolChoice, "Args: ", args)
   if (toolChoice === "read") {
     return [toolMemory, readsAFile]
   }
+
+  // strip off the actual list of files
+  const cleanedMemory = workingMemory
+    .slice(0, -1)
+    .concat(withDialog.slice(-1))
+    .withMonologue(indentNicely`
+      After looking at the list of files and thinking
+      > ${monologue}
+      ${workingMemory.soulName} decided to call the tool: ${toolChoice} with the argument ${JSON.stringify(args)}.
+    `)
+
 
   if (toolChoice === "stop") {
     return [toolMemory, chats, { executeNow: true }]

@@ -23,7 +23,7 @@ export class FileSystem {
         name: entry.name,
         isDirectory: entry.isDirectory(),
       }
-    });
+    }).concat([{ name: "..", isDirectory: true }]);
   }
 
   async changeDirectory(relativePath: string) {

@@ -2,10 +2,10 @@
 import { MentalProcess, indentNicely, useActions, usePerceptions, useProcessManager, useSoulMemory, z } from "@opensouls/engine";
 import externalDialog from "../cognitiveSteps/externalDialog.js";
 import { ToolPossibilities, toolChooser } from "../cognitiveFunctions/toolChooser.js";
-import decision from "../cognitiveSteps/decision.js";
 import instruction from "../cognitiveSteps/instruction.js";
 import exploreFilesystem from "./exploreFilesystem.js";
 import { updateNotes } from "../cognitiveFunctions/notes.js";
+import internalMonologue from "../cognitiveSteps/internalMonologue.js";
 
 const tools: ToolPossibilities = {
   "pageUp": {
@@ -60,9 +60,17 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
     `)
   }
 
-  log("making a comment")
-  const [withDialog, stream] = await externalDialog(
+  const [withMonologue, monologue] = await internalMonologue(
     workingMemory,
+    "What are Bob's takeaways from that screen related to their goal?",
+    {
+      model: "gpt-4-turbo",
+    }
+  )
+
+  log("making a comment")
+  const [withDialog, stream, resp] = await externalDialog(
+    withMonologue,
     "Make a comment on what they are seeing.",
     { stream: true, model: "gpt-4-turbo" }
   );
@@ -75,11 +83,21 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
   
   log("Tool choice: ", toolChoice, "Args: ", args)
 
+  // strip off any screens, etc
+  const cleanedMemory = workingMemory
+    .slice(0, -1)
+    .concat(withDialog.slice(-1))
+    .withMonologue(indentNicely`
+      After looking at the screen and thinking
+      > ${monologue}
+      ${workingMemory.soulName} decided to call the tool: ${toolChoice} with the argument ${JSON.stringify(args)}.
+    `)
+
   if (toolChoice === "exit") {
-    return [toolMemory, exploreFilesystem, { executeNow: true }]
+    return [cleanedMemory, exploreFilesystem, { executeNow: true }]
   }
 
-  return toolMemory;
+  return cleanedMemory;
 }
 
 export default readsAFile;

@@ -1,4 +1,4 @@
-import { ChatMessageRoleEnum, WorkingMemory, createCognitiveStep, indentNicely, useSoulMemory } from "@opensouls/engine";
+import { ChatMessageRoleEnum, WorkingMemory, createCognitiveStep, indentNicely, useActions, useSoulMemory } from "@opensouls/engine";
 
 const goalNotes = createCognitiveStep(({ existing, goal }: { existing: string, goal: string }) => {
   return {
@@ -33,6 +33,7 @@ const goalNotes = createCognitiveStep(({ existing, goal }: { existing: string, g
 })
 
 export const updateNotes = async (workingMemory: WorkingMemory) => {
+  const { log } = useActions()
   const notes = useSoulMemory("notes", "Just started")
   const goal = useSoulMemory("goal", "")
 
@@ -49,6 +50,7 @@ export const updateNotes = async (workingMemory: WorkingMemory) => {
   })
 
   notes.current = updatedNotes
+  log("Updated notes.", notes.current)
 
   return workingMemory
 
