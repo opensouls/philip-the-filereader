@@ -45,7 +45,7 @@ const exploreFilesystem: MentalProcess = async ({ workingMemory }) => {
 
   const [withMonologue, monologue] = await internalMonologue(
     workingMemory,
-    "What are Bob's takeaways from that screen related to their goal?",
+    `What are ${workingMemory.soulName}'s takeaways from that file list, to their goal?`,
     {
       model: "gpt-4-turbo",
     }
@@ -54,8 +54,8 @@ const exploreFilesystem: MentalProcess = async ({ workingMemory }) => {
   log("making a comment")
   const [withDialog, resp] = await externalDialog(
     withMonologue,
-    "Make a comment on what they are seeing.",
-    { model: "quality" }
+    `${workingMemory.soulName} thinks out loud (under their breath) about what they are reading.`,
+    { model: "gpt-4-turbo" }
   );
   speak(resp);
 

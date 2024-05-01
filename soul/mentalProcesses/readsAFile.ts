@@ -62,7 +62,7 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
 
   const [withMonologue, monologue] = await internalMonologue(
     workingMemory,
-    "What are Bob's takeaways from that screen related to their goal?",
+    `What are ${workingMemory.soulName}'s takeaways from what they are reading (related to their goal)?`,
     {
       model: "gpt-4-turbo",
     }
@@ -71,7 +71,7 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
   log("making a comment")
   const [withDialog, stream, resp] = await externalDialog(
     withMonologue,
-    "Make a comment on what they are seeing.",
+    `${workingMemory.soulName} thinks out loud (under their breath) about what they are reading.`,
     { stream: true, model: "gpt-4-turbo" }
   );
   speak(stream);
