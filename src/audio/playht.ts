@@ -1,0 +1,81 @@
+import * as PlayHT from "playht";
+import { Readable, Writable } from "node:stream"
+import { log } from "../timedLog.js";
+
+PlayHT.init({
+  apiKey: process.env["PLAY_HT_SECRET"]!,
+  userId: process.env["PLAY_HT_USER_ID"]!,
+});
+
+function getReadableWritablePair() {
+  const readable = new Readable({
+    read() { } // This is needed to prevent the Readable from auto-closing when there is no data to push
+  });
+
+  const writable = new Writable({
+    write(chunk, encoding, callback) {
+      if (!readable.push(chunk)) {
+        // When the readable stream's buffer is full, we need to wait for it to drain.
+        readable.once('drain', callback);
+      } else {
+        // Otherwise, we can continue writing immediately.
+        callback();
+      }
+    },
+    final(callback) {
+      readable.push(null); // Signal the end of the stream
+      callback();
+    }
+  });
+
+  return { readable, writable }
+}
+
+export async function speakPlayHT(text: string | NodeJS.ReadableStream, speaker = "Dave", modelId = "mist") {
+  // configure your stream
+  const streamingOptions: PlayHT.SpeechStreamOptions = {
+    // must use turbo for the best latency
+    voiceEngine: "PlayHT2.0-turbo",
+    // this voice id can be one of our prebuilt voices or your own voice clone id, refer to the`listVoices()` method for a list of supported voices.
+    voiceId:
+      // "oscar",
+      "s3://voice-cloning-zero-shot/d82d246c-148b-457f-9668-37b789520891/adolfosaad/manifest.json",
+
+      // "s3://voice-cloning-zero-shot/d9ff78ba-d016-47f6-b0ef-dd630f59414e/female-cs/manifest.json",
+    // you can pass any value between 8000 and 48000, 24000 is default
+    sampleRate: 24000,
+    // the generated audio encoding, supports 'raw' | 'mp3' | 'wav' | 'ogg' | 'flac' | 'mulaw'
+    outputFormat: 'mp3',
+    // playback rate of generated speech
+    speed: 1,
+  };
+
+  const { readable, writable } = getReadableWritablePair();
+  // start streaming!
+  const stream = await PlayHT.stream(text, streamingOptions);
+  return Readable.from(stream)
+
+  let first = true
+  stream.on("data", (chunk) => {
+    writable.write(chunk);
+    if (first) {
+      log("play ht stream started")
+      first = false
+    }
+    // Do whatever you want with the stream, you could save it to a file, stream it in realtime to the browser or app, or to a telephony system
+  });
+  await new Promise<void>((resolve, reject) => {
+    stream.on("end", () => {
+      log("play ht stream finished")
+      writable.end();
+      resolve();
+    });
+    stream.on("error", (err) => {
+      console.error("stream error: ", err)
+      writable.end();
+      reject(err);
+    });
+  });
+
+  return readable
+}

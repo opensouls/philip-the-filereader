@@ -12,10 +12,19 @@
   "author": "",
   "license": "UNLICENSED",
   "devDependencies": {
+    "@types/fluent-ffmpeg": "^2.1.24",
     "typescript": "^5.3.3"
   },
+  "trustedDependencies": [
+    "speaker",
+    "speaker-arm64"
+  ],
   "dependencies": {
     "@opensouls/engine": ">=0.1.15",
-    "@types/bun": "^1.1.0"
+    "@types/bun": "^1.1.0",
+    "@types/play-sound": "^1.1.2",
+    "fluent-ffmpeg": "^2.1.2",
+    "play-sound": "^1.1.6",
+    "playht": "^0.9.8"
   }
 }

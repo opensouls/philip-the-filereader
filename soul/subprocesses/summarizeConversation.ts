@@ -1,5 +1,5 @@
 
-import { ChatMessageRoleEnum, MentalProcess, WorkingMemory, createCognitiveStep, indentNicely, stripEntityAndVerb, stripEntityAndVerbFromStream, useActions, useProcessMemory } from "@opensouls/engine";
+import { ChatMessageRoleEnum, MentalProcess, WorkingMemory, createCognitiveStep, indentNicely, stripEntityAndVerb, stripEntityAndVerbFromStream, useActions, useProcessMemory, useSoulMemory } from "@opensouls/engine";
 
 const conversationNotes = createCognitiveStep((existing: string) => {
   return {
@@ -70,7 +70,7 @@ const internalMonologue = createCognitiveStep((instructions: string | { instruct
 })
 
 const summarizesConversation: MentalProcess = async ({ workingMemory }) => {
-  const conversationModel = useProcessMemory(indentNicely`
+  const conversationSummary = useSoulMemory("conversationSummary", indentNicely`
     ${workingMemory.soulName} met a new user for the first time. They are just getting to know each other and ${workingMemory.soulName} is trying to learn as much as they can about the user.
   `)
   const { log } = useActions()
@@ -81,22 +81,12 @@ const summarizesConversation: MentalProcess = async ({ workingMemory }) => {
     log("updating conversation notes");
     [memory] = await internalMonologue(memory, { instructions: "What have I learned in this conversation.", verb: "noted" })
 
-    const [, updatedNotes] = await conversationNotes(memory, conversationModel.current)
+    const [, updatedNotes] = await conversationNotes(memory, conversationSummary.current)
 
-    conversationModel.current = updatedNotes as string
+    conversationSummary.current = updatedNotes as string
 
     return workingMemory
       .slice(0,2)
-      .withMemory({
-        role: ChatMessageRoleEnum.Assistant,
-        content: indentNicely`
-          ## Conversation so far
-          ${updatedNotes}
-        `,
-        metadata: {
-          conversationSummary: true
-        }
-      })
       .concat(workingMemory.slice(-4))
   }
 

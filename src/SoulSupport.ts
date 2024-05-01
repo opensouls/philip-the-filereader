@@ -1,13 +1,18 @@
 import { ActionEvent, Soul } from "@opensouls/engine"
 import { FileSystem, FileReader } from "./FileReader.js"
+import { speakPlayHT } from "./audio/playht.js"
+import { Readable } from "node:stream"
+import player from "play-sound"
+import { rm } from "node:fs/promises"
 
 export class SoulSupport {
   soul
   fileSystem
   reader?: FileReader
+  speakingPromise?: Promise<void>
 
   constructor() {
-    this.fileSystem = new FileSystem("../readerman")
+    this.fileSystem = new FileSystem("./")
     this.soul = new Soul({
       organization: "tobowers",
       blueprint: "philip-the-fileman",
@@ -16,6 +21,7 @@ export class SoulSupport {
       debug: true,
       token: process.env.SOUL_ENGINE_TOKEN,
     })
+    this.soul.on("says", this.onSays.bind(this))
     this.soul.on("ls", this.onLs.bind(this))
     this.soul.on("cd", this.onCd.bind(this))
     this.soul.on("read", this.read.bind(this))
@@ -31,11 +37,45 @@ export class SoulSupport {
     await this.soul.disconnect()
   }
 
+  async waitForSpeaking() {
+    if (this.speakingPromise) {
+      await this.speakingPromise
+    }
+  }
+
+  async onSays(evt: ActionEvent) {
+    // const mp3Stream = await speakPlayHT(Readable.from(evt.stream()))
+    // // const pcmStream = mp3ToPCM(mp3Stream, controller.signal)
+
+    // await this.waitForSpeaking()
+    // this.speakingPromise = new Promise<void>(async (resolve, reject) => {
+    //   await rm("speaking.mp3", { force: true })
+
+    //   console.log('writing mp3')
+    //   const writeStream = Bun.file("speaking.mp3").writer()
+    //   for await (const chunk of mp3Stream) {
+    //     writeStream.write(chunk)
+    //   }
+    //   writeStream.end()
+
+    //   console.log("playing mp3")
+    //   player().play("speaking.mp3", (err) => {
+    //     if (err) {
+    //       console.error("error playing mp3", err)
+    //       reject(err)
+    //       return
+    //     }
+    //     resolve()
+    //   })
+    // })
+  }
+
   async onLs(evt: ActionEvent) {
     console.log("on ls event", await evt.content())
 
     const list = await this.fileSystem.list()
 
+    await this.waitForSpeaking()
     this.soul.dispatch({
       name: "Philip",
       action: "listed",
@@ -51,6 +91,8 @@ export class SoulSupport {
     console.log("on cd event", await evt.content(), JSON.stringify(evt._metadata))
 
     const list = await this.fileSystem.changeDirectory(evt._metadata?.directory as string)
+
+    await this.waitForSpeaking()
 
     this.soul.dispatch({
       name: "Philip",
@@ -68,6 +110,8 @@ export class SoulSupport {
 
     const fileReader = await this.fileSystem.read(evt._metadata?.file as string)
     this.reader = fileReader
+
+    await this.waitForSpeaking()
 
     this.soul.dispatch({
       name: "Philip",
@@ -89,6 +133,8 @@ export class SoulSupport {
 
     const content = this.reader.pageDown()
 
+    await this.waitForSpeaking()
+
     this.soul.dispatch({
       name: "Philip",
       action: "pagedDown",
@@ -105,6 +151,8 @@ export class SoulSupport {
     }
 
     const content = this.reader.pageUp()
+
+    await this.waitForSpeaking()
 
     this.soul.dispatch({
       name: "Philip",

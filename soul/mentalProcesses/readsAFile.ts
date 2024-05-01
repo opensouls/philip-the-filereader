@@ -6,6 +6,7 @@ import instruction from "../cognitiveSteps/instruction.js";
 import exploreFilesystem from "./exploreFilesystem.js";
 import { updateNotes } from "../cognitiveFunctions/notes.js";
 import internalMonologue from "../cognitiveSteps/internalMonologue.js";
+import spokenDialog from "../cognitiveSteps/spokenDialog.js";
 
 const tools: ToolPossibilities = {
   "pageUp": {
@@ -53,7 +54,7 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
 
   if (invokingPerception?._metadata?.screen) {
     workingMemory = workingMemory.withMonologue(indentNicely`
-      ${workingMemory.soulName} is using an editor that shows the lines of the editor 100 at at time.
+      ${workingMemory.soulName} is using an editor that shows up to 100 lines of the file at a time.
       
       ## Editor
       ${invokingPerception._metadata.screen}
@@ -69,7 +70,7 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
   )
 
   log("making a comment")
-  const [withDialog, stream, resp] = await externalDialog(
+  const [withDialog, stream, resp] = await spokenDialog(
     withMonologue,
     `${workingMemory.soulName} thinks out loud (under their breath) about what they are reading.`,
     { stream: true, model: "gpt-4-turbo" }

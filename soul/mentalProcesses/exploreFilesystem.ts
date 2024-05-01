@@ -6,6 +6,7 @@ import readsAFile from "./readsAFile.js";
 import chats from "./chat.js";
 import { updateNotes } from "../cognitiveFunctions/notes.js";
 import internalMonologue from "../cognitiveSteps/internalMonologue.js";
+import spokenDialog from "../cognitiveSteps/spokenDialog.js";
 
 const tools: ToolPossibilities = {
   "cd": {
@@ -52,7 +53,7 @@ const exploreFilesystem: MentalProcess = async ({ workingMemory }) => {
   )
 
   log("making a comment")
-  const [withDialog, resp] = await externalDialog(
+  const [withDialog, resp] = await spokenDialog(
     withMonologue,
     `${workingMemory.soulName} thinks out loud (under their breath) about what they are reading.`,
     { model: "gpt-4-turbo" }

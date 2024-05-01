@@ -11,6 +11,9 @@ const DEFAULT_PREMONITION = "remembered its time to"
 
 const defaultPerceptionProcessor: PerceptionProcessor = async ({ perception, workingMemory, currentProcess }) => {
   const notes = useSoulMemory("notes", "Just started")
+  const conversationSummary = useSoulMemory("conversationSummary", indentNicely`
+    ${workingMemory.soulName} met a new user for the first time. They are just getting to know each other and ${workingMemory.soulName} is trying to learn as much as they can about the user.
+  `)
 
   const content = perception.internal ?
   `${perception.name} ${perception.premonition || DEFAULT_PREMONITION} ${perception.action} ${perception.content}` :
@@ -34,6 +37,9 @@ const defaultPerceptionProcessor: PerceptionProcessor = async ({ perception, wor
       
       ## Progress Towards Goal
       ${notes.current}
+
+      ## Conversation Summary
+      ${conversationSummary.current}
     `
   }).concat(workingMemory.slice(1))
 
