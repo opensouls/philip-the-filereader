@@ -1,5 +1,5 @@
 
-import { MentalProcess, indentNicely, useActions, usePerceptions, useProcessManager, useSoulMemory, z } from "@opensouls/engine";
+import { MentalProcess, indentNicely, useActions, usePerceptions, useProcessManager, useSoulMemory, useSoulStore, z } from "@opensouls/engine";
 import externalDialog from "../cognitiveSteps/externalDialog.js";
 import { ToolPossibilities, toolChooser } from "../cognitiveFunctions/toolChooser.js";
 import instruction from "../cognitiveSteps/instruction.js";
@@ -23,13 +23,16 @@ const tools: ToolPossibilities = {
 const readsAFile: MentalProcess = async ({ workingMemory }) => {
   const { speak, log  } = useActions()
   const { invokingPerception } = usePerceptions()
+  const { set } = useSoulStore()
+
+  const { cwd, fileName } = invokingPerception!._metadata! as { cwd: string, fileName: string }
 
   if (invokingPerception?.action === "readFile") {
     // this is the whole file, so should only come through as a summary to the soul.
     // slice off the last memory
     workingMemory = workingMemory.slice(0, -1)
     // summarize
-    const { cwd, fileName, largeChunk: content } = invokingPerception._metadata! as { cwd: string, fileName: string, largeChunk: string }
+    const { largeChunk: content } = invokingPerception._metadata! as { cwd: string, fileName: string, largeChunk: string }
 
     log(`read file ${fileName} in ${cwd}`)
 
@@ -85,7 +88,7 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
   log("Tool choice: ", toolChoice, "Args: ", args)
 
   // strip off any screens, etc
-  const cleanedMemory = workingMemory
+  const cleanedMemory = toolMemory
     .slice(0, -1)
     .concat(withDialog.slice(-1))
     .withMonologue(indentNicely`
@@ -95,6 +98,25 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
     `)
 
   if (toolChoice === "exit") {
+    // let's create a takeaway from this file
+    const [, takeaway] = await instruction(
+      cleanedMemory,
+      indentNicely`
+        ${workingMemory.soulName} just decided to stop reading the file: ${cwd}/${fileName}.
+        
+        ## Their Thoughts
+        ${monologue}
+
+        Write a 1 paragraph takewaway on all that ${workingMemory.soulName} learned from the file related to their goals. Espcially keep details they would want to remember when scanning the file system for file names again.
+      `,
+      {
+        model: "exp/llama-v3-70b-instruct",
+      }
+    )
+
+    log("takeaway: ", takeaway)
+    set(`${cwd}/${fileName}`, takeaway)
+
     return [cleanedMemory, exploreFilesystem, { executeNow: true }]
   }
 

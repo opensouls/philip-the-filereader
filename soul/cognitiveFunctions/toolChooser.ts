@@ -43,6 +43,8 @@ export const toolChooser = async (workingMemory: WorkingMemory, possibilities: T
     return [workingMemory, toolChoice, undefined]
   }
 
+  let args: any = {}
+
   if (possibilities[toolChoice]?.params) {
     log("creating cognitive function")
     const func = createCognitiveStep(() => {
@@ -56,28 +58,28 @@ export const toolChooser = async (workingMemory: WorkingMemory, possibilities: T
         `,
         schema: possibilities[toolChoice].params,
       }
-    })
+    });
 
-    const [, args] = await func(workingMemory, undefined, { model: "gpt-4-turbo" })
+    [, args] = await func(workingMemory, undefined, { model: "gpt-4-turbo" })
 
     workingMemory = workingMemory.withMonologue(indentNicely`
       ${workingMemory.soulName} chose to use the tool: '${toolChoice}' and call it with the arguments: ${JSON.stringify(args)}.
     `)
 
-    dispatch({
-      action: toolChoice,
-      content: JSON.stringify(args),
-      _metadata: {
-        ...args
-      }
-    })
-
-    return [workingMemory, toolChoice, args]
+  } else {
+    workingMemory = workingMemory.withMonologue(indentNicely`
+      ${workingMemory.soulName} chose to use the tool: ${toolChoice}.
+    `)
   }
 
-  workingMemory = workingMemory.withMonologue(indentNicely`
-    ${workingMemory.soulName} chose to use the tool: ${toolChoice}.
-  `)
+  log('dispatching tool choice', toolChoice.trim(), args)
+  dispatch({
+    action: toolChoice.trim(),
+    content: JSON.stringify(args),
+    _metadata: {
+      ...args
+    }
+  })
 
-  return [workingMemory, toolChoice, undefined]
+  return [workingMemory, toolChoice, args]
 }

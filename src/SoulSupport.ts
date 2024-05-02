@@ -39,6 +39,7 @@ export class SoulSupport {
 
   async waitForSpeaking() {
     if (this.speakingPromise) {
+      console.log('waiting for speech to finish')
       await this.speakingPromise
     }
   }
@@ -128,6 +129,7 @@ export class SoulSupport {
   }
 
   async onPageDown(_evt: ActionEvent) {
+    console.log("page down event")
     if (!this.reader) {
       throw new Error("Reader not initialized")
     }
@@ -135,18 +137,22 @@ export class SoulSupport {
     const content = this.reader.pageDown()
 
     await this.waitForSpeaking()
+    console.log('shipping page down')
 
     this.soul.dispatch({
       name: "Philip",
       action: "pagedDown",
       content: "Philip paged down",
       _metadata: {
+        cwd: this.reader.cwd,
+        fileName: this.reader.relativePath,
         screen: content,
       }
     })
   }
 
   async onPageUp(_evt: ActionEvent) {
+    console.log("page up event")
     if (!this.reader) {
       throw new Error("Reader not initialized")
     }
@@ -154,12 +160,14 @@ export class SoulSupport {
     const content = this.reader.pageUp()
 
     await this.waitForSpeaking()
-
+    console.log('shipping page up')
     this.soul.dispatch({
       name: "Philip",
       action: "pagedUp",
       content: "Philip paged up",
       _metadata: {
+        cwd: this.reader.cwd,
+        fileName: this.reader.relativePath,
         screen: content,
       }
     })

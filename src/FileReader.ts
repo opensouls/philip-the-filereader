@@ -10,7 +10,7 @@ export class FileSystem {
   }
 
   async read(relativePath: string, numberOfLines = 100): Promise<FileReader> {
-    const fileReader = new FileReader(path.join(this.rootPath, this.cwd, relativePath), numberOfLines)
+    const fileReader = new FileReader(this.rootPath, this.cwd, relativePath, numberOfLines)
     await fileReader.readAll()
     return fileReader
   }
@@ -37,8 +37,11 @@ export class FileReader {
   public allContent: string = ""
   private contentLines: number = 0
   private cursor = 0
+  private absoluteUrl: string
 
-  constructor(public absoluteUrl: string, public numberOfLines: number) { }
+  constructor(public rootPath: string, public cwd: string, public relativePath: string, public numberOfLines: number) {
+    this.absoluteUrl = path.join(rootPath, cwd, relativePath)
+  }
 
   async readAll() {
     this.allContent = await Bun.file(this.absoluteUrl).text()
