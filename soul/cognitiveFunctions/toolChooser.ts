@@ -8,12 +8,21 @@ export interface ToolDescription {
 
 export type ToolPossibilities = Record<string, ToolDescription>
 
+/**
+ * Allows a soul to choose from a list of available tools or opt to not use any tool.
+ * This function presents the soul with a description of each tool and the current goal,
+ * then awaits a decision on which tool to use. If the soul decides not to use any tool,
+ * the function will return with the choice "none".
+ * 
+ * The soul will dispach the tool choice.
+ */
 export const toolChooser = async (workingMemory: WorkingMemory, possibilities: ToolPossibilities): Promise<[WorkingMemory, keyof typeof possibilities, any]> => {
   const { log, dispatch } = useActions()
 
   const goal = useSoulMemory("goal", "Philip wants to understand the current codebase, and what it does.")
 
   log("Choosing a tool")
+  // first just decide which tool to us.
   const [, toolChoice] = await decision(
     workingMemory,
     {
@@ -45,6 +54,8 @@ export const toolChooser = async (workingMemory: WorkingMemory, possibilities: T
 
   let args: any = {}
 
+  // then if the user has specified an argument format
+  // then get the actual arguments to the tool as a separate step.
   if (possibilities[toolChoice]?.params) {
     log("creating cognitive function")
     const func = createCognitiveStep(() => {

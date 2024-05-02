@@ -14,7 +14,7 @@ export class SoulSupport {
   constructor() {
     this.fileSystem = new FileSystem("./")
     this.soul = new Soul({
-      organization: "tobowers",
+      organization: process.env.SOUL_ENGINE_ORG!,
       blueprint: "philip-the-fileman",
       soulId: "reader1",
       local: true,

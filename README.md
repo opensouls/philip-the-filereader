@@ -1,18 +1,16 @@
-The Soul Engine
-=================
+Philip The Filereader
+=====
 
-The **Soul Engine** is a powerful tool for creating, developing, and deploying AI souls. Souls are dynamic, agentic, and stateful entities that are steerable by the developer, enabling the creation of engaging user and player experiences interacting with the souls.
+Philip is a soul who has access to his own filesystem, and the agentic ability to read his own files.
 
-# ⚡ QuickStart
 
-This project contains a complete Soul [Blueprint](https://docs.souls.chat). To get started, simply go to the root directory and run
+## Running
 
+Update the secrets
 ```bash
-npx soul-engine dev
+cp .env.example .env
 ```
 
-which will connect your soul to the engine and open the Soul Engine web interface.
-
-# 📖 Documentation
-
-Full documentation for the Soul Engine API is located [here](https://docs.souls.chat)!
+```bash
+bun run scripts/dev.ts
+```
