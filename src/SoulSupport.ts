@@ -44,30 +44,31 @@ export class SoulSupport {
   }
 
   async onSays(evt: ActionEvent) {
-    // const mp3Stream = await speakPlayHT(Readable.from(evt.stream()))
-    // // const pcmStream = mp3ToPCM(mp3Stream, controller.signal)
+    const mp3Stream = await speakPlayHT(Readable.from(evt.stream()))
+    // const pcmStream = mp3ToPCM(mp3Stream, controller.signal)
 
-    // await this.waitForSpeaking()
-    // this.speakingPromise = new Promise<void>(async (resolve, reject) => {
-    //   await rm("speaking.mp3", { force: true })
+    await this.waitForSpeaking()
+    this.speakingPromise = new Promise<void>(async (resolve, reject) => {
+      await rm("speaking.mp3", { force: true })
 
-    //   console.log('writing mp3')
-    //   const writeStream = Bun.file("speaking.mp3").writer()
-    //   for await (const chunk of mp3Stream) {
-    //     writeStream.write(chunk)
-    //   }
-    //   writeStream.end()
+      console.log('writing mp3')
+      const writeStream = Bun.file("speaking.mp3").writer()
+      for await (const chunk of mp3Stream) {
+        writeStream.write(chunk)
+      }
+      writeStream.end()
 
-    //   console.log("playing mp3")
-    //   player().play("speaking.mp3", (err) => {
-    //     if (err) {
-    //       console.error("error playing mp3", err)
-    //       reject(err)
-    //       return
-    //     }
-    //     resolve()
-    //   })
-    // })
+      console.log("playing mp3")
+      player().play("speaking.mp3", (err) => {
+        console.log("mp3 complete")
+        if (err) {
+          console.error("error playing mp3", err)
+          reject(err)
+          return
+        }
+        resolve()
+      })
+    })
   }
 
   async onLs(evt: ActionEvent) {
