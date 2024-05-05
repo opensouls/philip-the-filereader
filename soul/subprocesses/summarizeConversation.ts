@@ -1,4 +1,3 @@
-
 import { MentalProcess } from "@opensouls/engine";
 import summarizesConversation from "../cognitiveFunctions/summarizeConversation.js";
 
