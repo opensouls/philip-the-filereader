@@ -9,10 +9,10 @@ export class FileSystem {
     this.cwd = ""
   }
 
-  async read(relativePath: string, numberOfLines = 100): Promise<FileReader> {
-    const fileReader = new FileReader(this.rootPath, this.cwd, relativePath, numberOfLines)
-    await fileReader.readAll()
-    return fileReader
+  async openInEditor(relativePath: string, numberOfLines = 100): Promise<FileEditor> {
+    const fileEditor = new FileEditor(this.rootPath, this.cwd, relativePath, numberOfLines)
+    await fileEditor.readAll()
+    return fileEditor
   }
 
   async list() {
@@ -33,7 +33,7 @@ export class FileSystem {
   }
 }
 
-export class FileReader {
+export class FileEditor {
   public allContent: string = ""
   private contentLines: number = 0
   private cursor = 0
@@ -56,6 +56,13 @@ export class FileReader {
       const indexStr = (index + this.cursor).toString().padEnd(maxDigits);
       return `${indexStr} : ${line}`;
     })
+  }
+
+  async edit(start: number, end: number, replacement: string) {
+    const lines = this.allContent.split("\n")
+    lines.splice(start, end - start, replacement)
+    this.allContent = lines.join("\n")
+    await fs.writeFile(this.absoluteUrl, this.allContent)
   }
 
   pageDown() {

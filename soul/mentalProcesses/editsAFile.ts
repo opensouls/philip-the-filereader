@@ -15,12 +15,20 @@ const tools: ToolPossibilities = {
   "pageDown": {
     description: "Page down in the current file.",
   },
+  "edit": {
+    description: "Edit a section of the file. Philip provides the start and end lines to edit and the replacement text. The lines in the file will be completely replaced by the new text.",
+    params: z.object({
+      start: z.number().describe("starting line number."),
+      end: z.number().describe("ending line number."),
+      replacement: z.string().describe("the text to replace the lines with."),
+    })
+  },
   "exit": {
     description: "Exit reading the current file",
   }
 }
 
-const readsAFile: MentalProcess = async ({ workingMemory }) => {
+const editsAFile: MentalProcess = async ({ workingMemory }) => {
   const { speak, log  } = useActions()
   const { invokingPerception } = usePerceptions()
   const { set } = useSoulStore()
@@ -66,7 +74,7 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
 
   const [withMonologue, monologue] = await internalMonologue(
     workingMemory,
-    `What are ${workingMemory.soulName}'s takeaways from what they are reading (related to their goal)?`,
+    `What are ${workingMemory.soulName}'s takeaways from what they are reading and what they'd like to do?`,
     {
       model: "gpt-4-turbo",
     }
@@ -88,9 +96,7 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
   log("Tool choice: ", toolChoice, "Args: ", args)
 
   // strip off any screens, etc
-  const cleanedMemory = toolMemory
-    .slice(0, -1)
-    .concat(withDialog.slice(-1))
+  const cleanedMemory = withDialog
     .withMonologue(indentNicely`
       After looking at the screen and thinking
       > ${monologue}
@@ -123,4 +129,4 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
   return cleanedMemory;
 }
 
-export default readsAFile;
+export default editsAFile;

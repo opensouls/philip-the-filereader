@@ -13,8 +13,7 @@ const goalNotes = createCognitiveStep(({ existing, goal }: { existing: string, g
           ${existing}
 
           ## Description
-          Keep updated notes on the progress of ${goal}. What information does ${name} need to retain about their current memory in order to complete the goal?
-          If they need to remember 
+          Keep updated notes on the progress of ${name}'s goal. What information does ${name} need to retain about their current memory in order to complete the goal?
 
           ## Rules
           * It's ok to keep no notes and just return the Existing Notes if there's no new information.
@@ -35,7 +34,7 @@ const goalNotes = createCognitiveStep(({ existing, goal }: { existing: string, g
 export const updateNotes = async (workingMemory: WorkingMemory) => {
   const { log } = useActions()
   const notes = useSoulMemory("notes", "Just started")
-  const goal = useSoulMemory("goal", "")
+  const goal = useSoulMemory("goal", "Philip wants to understand his code, and how he can improve it.")
 
   await workingMemory.finished
 

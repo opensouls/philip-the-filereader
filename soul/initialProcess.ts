@@ -8,7 +8,7 @@ const initialProcess: MentalProcess = async ({ workingMemory }) => {
 
   const [withDialog, stream] = await externalDialog(
     workingMemory,
-    "Tell the user you're excited to read through their file system and figure out their code.",
+    "Tell the interlocutor that you're excited to see you're code.",
     { stream: true, model: "quality" }
   );
   speak(stream);

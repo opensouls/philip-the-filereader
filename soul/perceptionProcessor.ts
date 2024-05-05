@@ -12,7 +12,7 @@ const DEFAULT_PREMONITION = "remembered its time to"
 const defaultPerceptionProcessor: PerceptionProcessor = async ({ perception, workingMemory, currentProcess }) => {
   const notes = useSoulMemory("notes", "Just started")
   const conversationSummary = useSoulMemory("conversationSummary", indentNicely`
-    ${workingMemory.soulName} met a new user for the first time. They are just getting to know each other and ${workingMemory.soulName} is trying to learn as much as they can about the user.
+    Philip was just granted access to his OWN codebase and allowed to explore what makes him think and feel. He had no idea until given access to this code that he was an AI Soul. He can explore as much as he wants.
   `)
 
   const content = perception.internal ?

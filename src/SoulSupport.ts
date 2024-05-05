@@ -1,14 +1,15 @@
 import { ActionEvent, Soul } from "@opensouls/engine"
-import { FileSystem, FileReader } from "./FileReader.js"
+import { FileSystem, FileEditor } from "./FileSystem.js"
 import { speakPlayHT } from "./audio/playht.js"
 import { Readable } from "node:stream"
 import player from "play-sound"
 import { rm } from "node:fs/promises"
+import { log } from "./timedLog.js"
 
 export class SoulSupport {
   soul
   fileSystem
-  reader?: FileReader
+  reader?: FileEditor
   speakingPromise?: Promise<void>
 
   constructor() {
@@ -24,7 +25,7 @@ export class SoulSupport {
     this.soul.on("says", this.onSays.bind(this))
     this.soul.on("ls", this.onLs.bind(this))
     this.soul.on("cd", this.onCd.bind(this))
-    this.soul.on("read", this.read.bind(this))
+    this.soul.on("openInEditor", this.openInEditor.bind(this))
     this.soul.on("pageDown", this.onPageDown.bind(this))
     this.soul.on("pageUp", this.onPageUp.bind(this))
   }
@@ -45,31 +46,32 @@ export class SoulSupport {
   }
 
   async onSays(evt: ActionEvent) {
-    const mp3Stream = await speakPlayHT(Readable.from(evt.stream()))
+    log("on says event", await evt.content(), evt._metadata)
+    // const mp3Stream = await speakPlayHT(Readable.from(evt.stream()))
     // const pcmStream = mp3ToPCM(mp3Stream, controller.signal)
 
-    await this.waitForSpeaking()
-    this.speakingPromise = new Promise<void>(async (resolve, reject) => {
-      await rm("speaking.mp3", { force: true })
+    // await this.waitForSpeaking()
+    // this.speakingPromise = new Promise<void>(async (resolve, reject) => {
+    //   await rm("speaking.mp3", { force: true })
 
-      console.log('writing mp3')
-      const writeStream = Bun.file("speaking.mp3").writer()
-      for await (const chunk of mp3Stream) {
-        writeStream.write(chunk)
-      }
-      writeStream.end()
+    //   console.log('writing mp3')
+    //   const writeStream = Bun.file("speaking.mp3").writer()
+    //   for await (const chunk of mp3Stream) {
+    //     writeStream.write(chunk)
+    //   }
+    //   writeStream.end()
 
-      console.log("playing mp3")
-      player().play("speaking.mp3", (err) => {
-        console.log("mp3 complete")
-        if (err) {
-          console.error("error playing mp3", err)
-          reject(err)
-          return
-        }
-        resolve()
-      })
-    })
+    //   console.log("playing mp3")
+    //   player().play("speaking.mp3", (err) => {
+    //     console.log("mp3 complete")
+    //     if (err) {
+    //       console.error("error playing mp3", err)
+    //       reject(err)
+    //       return
+    //     }
+    //     resolve()
+    //   })
+    // })
   }
 
   async onLs(evt: ActionEvent) {
@@ -85,6 +87,31 @@ export class SoulSupport {
       _metadata: {
         cwd: this.fileSystem.cwd,
         list,
+      }
+    })
+  }
+
+  async onEdit(evt: ActionEvent) {
+    log("on edit event", await evt.content(), evt._metadata)
+
+    if (!this.reader) {
+      throw new Error("Reader not initialized")
+    }
+
+    const { start, end, replacement } = evt._metadata as { start: number, end: number, replacement: string }
+    
+    log("would have edited file", this.reader.relativePath, start, end, replacement)
+    // await this.reader.edit(start, end, replacement)
+
+    await this.waitForSpeaking()
+    this.soul.dispatch({
+      name: "Philip",
+      action: "edited",
+      content: `Philip edited the file ${this.reader.relativePath} from line ${start} to ${end} with "${replacement}".`,
+      _metadata: {
+        cwd: this.reader.cwd,
+        fileName: this.reader.relativePath,
+        screen: this.reader.readPage().join("\n"),
       }
     })
   }
@@ -107,10 +134,10 @@ export class SoulSupport {
     })
   }
 
-  async read(evt: ActionEvent) {
+  async openInEditor(evt: ActionEvent) {
     console.log("on read event", await evt.content(), evt._metadata)
 
-    const fileReader = await this.fileSystem.read(evt._metadata?.file as string)
+    const fileReader = await this.fileSystem.openInEditor(evt._metadata?.file as string)
     this.reader = fileReader
 
     await this.waitForSpeaking()
@@ -118,7 +145,7 @@ export class SoulSupport {
     this.soul.dispatch({
       name: "Philip",
       action: "readFile",
-      content: "Philip opened a file in the editor.",
+      content: `Philip opened '${evt._metadata?.file}' in the editor.`,
       _metadata: {
         cwd: this.fileSystem.cwd,
         fileName: evt._metadata?.file as string,

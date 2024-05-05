@@ -2,11 +2,12 @@
 import { ChatMessageRoleEnum, Memory, MentalProcess, indentNicely, useActions, usePerceptions, useProcessManager, useSoulMemory, useSoulStore, z } from "@opensouls/engine";
 import externalDialog from "../cognitiveSteps/externalDialog.js";
 import { ToolPossibilities, toolChooser } from "../cognitiveFunctions/toolChooser.js";
-import readsAFile from "./readsAFile.js";
+import editsAFile from "./editsAFile.js";
 import chats from "./chat.js";
 import { updateNotes } from "../cognitiveFunctions/notes.js";
 import internalMonologue from "../cognitiveSteps/internalMonologue.js";
 import spokenDialog from "../cognitiveSteps/spokenDialog.js";
+import summarizesConversation from "../cognitiveFunctions/summarizeConversation.js";
 
 const tools: ToolPossibilities = {
   "cd": {
@@ -18,10 +19,10 @@ const tools: ToolPossibilities = {
   "ls": {
     description: "List the files in the current directory",
   },
-  "read": {
+  "openInEditor": {
     description: "Opens a file in the current directory in an editor that shows the file 100 lines at a time.",
     params: z.object({
-      file: z.string().describe("The file to read")
+      file: z.string().describe("The file to read or edit.")
     })
   },
   "stop": {
@@ -49,6 +50,9 @@ const exploreFilesystem: MentalProcess = async ({ workingMemory }) => {
     })
     return workingMemory.withMonologue("Philip lists the files in the current directory.")
   }
+
+  workingMemory = await summarizesConversation({ workingMemory })
+
   if (invokingPerception?._metadata?.list) {
     const { list, cwd } = invokingPerception._metadata as unknown as { list: ListEntry[], cwd: string }
 
@@ -74,11 +78,15 @@ const exploreFilesystem: MentalProcess = async ({ workingMemory }) => {
       `
     })
 
-    log("would supply memories:", memories)
-    workingMemory = workingMemory.withMonologue(indentNicely`
-      ## ${workingMemory.soulName} remembers already reading the following files in this directory:
-      ${memories.join("\n\n")}
-    `)
+    if (memories.length > 0) {
+      log("would supply memories:", memories)
+      workingMemory = workingMemory.withMonologue(indentNicely`
+        ## ${workingMemory.soulName} remembers already reading the following files in this directory:
+        ${memories.join("\n\n")}
+      `)
+    }
+
+
   }
 
   const [withMonologue, monologue] = await internalMonologue(
@@ -92,7 +100,7 @@ const exploreFilesystem: MentalProcess = async ({ workingMemory }) => {
   log("making a comment")
   const [withDialog, resp] = await spokenDialog(
     withMonologue,
-    `${workingMemory.soulName} thinks out loud about what they are reading.`,
+    `${workingMemory.soulName} thinks out loud about what they are seeing.`,
     { model: "gpt-4-turbo" }
   );
   speak(resp);
@@ -103,14 +111,12 @@ const exploreFilesystem: MentalProcess = async ({ workingMemory }) => {
   const [toolMemory, toolChoice, args] = await toolChooser(withDialog, tools)
 
   log("Tool choice: ", toolChoice, "Args: ", args)
-  if (toolChoice === "read") {
-    return [toolMemory, readsAFile]
+  if (toolChoice === "openInEditor") {
+    return [toolMemory, editsAFile]
   }
 
   // strip off the actual list of files
-  const cleanedMemory = toolMemory
-    .slice(0, -1)
-    .concat(withDialog.slice(-1))
+  const cleanedMemory = withDialog
     .withMonologue(indentNicely`
       After looking at the list of files and thinking
       > ${monologue}
