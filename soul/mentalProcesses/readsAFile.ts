@@ -28,6 +28,12 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
   const { cwd, fileName } = invokingPerception!._metadata! as { cwd: string, fileName: string }
 
   if (invokingPerception?.action === "readFile") {
+
+    if (invokingPerception._metadata?.directoryError) {
+      log("Directory error")
+      return [workingMemory, exploreFilesystem, { executeNow: true }]
+    }
+
     // this is the whole file, so should only come through as a summary to the soul.
     // slice off the last memory
     workingMemory = workingMemory.slice(0, -1)
@@ -57,7 +63,7 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
 
   if (invokingPerception?._metadata?.screen) {
     workingMemory = workingMemory.withMonologue(indentNicely`
-      ${workingMemory.soulName} is using an editor that shows up to 100 lines of the file at a time.
+      ${workingMemory.soulName} is using an editor that shows up to 100 lines of the file at a time. If the end of the file is in the window the editor has an \`<eof>\` as the last line.
       
       ## Editor
       ${invokingPerception._metadata.screen}

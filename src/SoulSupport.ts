@@ -110,6 +110,20 @@ export class SoulSupport {
   async read(evt: ActionEvent) {
     console.log("on read event", await evt.content(), evt._metadata)
 
+    const isDirectory = await this.fileSystem.isDirectory(evt._metadata?.file as string)
+    if (isDirectory) {
+      this.soul.dispatch({
+        name: "Philip",
+        action: "readFile",
+        content: `Philip tried to read '${evt._metadata?.file}' but it was a directory.`,
+        _metadata: {
+          cwd: this.fileSystem.cwd,
+          fileName: evt._metadata?.file as string,
+          directoryError: true,
+        }
+      })
+    }
+
     const fileReader = await this.fileSystem.read(evt._metadata?.file as string)
     this.reader = fileReader
 
@@ -139,10 +153,12 @@ export class SoulSupport {
     await this.waitForSpeaking()
     console.log('shipping page down')
 
+    const dispatchMessage = content.length > 0 ? `Philip paged down` : `Philip paged down but they were already at the end of the file`
+
     this.soul.dispatch({
       name: "Philip",
       action: "pagedDown",
-      content: "Philip paged down",
+      content: dispatchMessage,
       _metadata: {
         cwd: this.reader.cwd,
         fileName: this.reader.relativePath,
@@ -160,11 +176,14 @@ export class SoulSupport {
     const content = this.reader.pageUp()
 
     await this.waitForSpeaking()
+
+    const dispatchMessage = content.length > 0 ? `Philip paged up` : `Philip paged up but they were already at the top of the file`
+
     console.log('shipping page up')
     this.soul.dispatch({
       name: "Philip",
       action: "pagedUp",
-      content: "Philip paged up",
+      content: dispatchMessage,
       _metadata: {
         cwd: this.reader.cwd,
         fileName: this.reader.relativePath,

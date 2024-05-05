@@ -9,6 +9,11 @@ export class FileSystem {
     this.cwd = ""
   }
 
+  async isDirectory(relativePath: string) {
+    const stats = await fs.stat(path.join(this.rootPath, this.cwd, relativePath))
+    return stats.isDirectory()
+  }
+
   async read(relativePath: string, numberOfLines = 100): Promise<FileReader> {
     const fileReader = new FileReader(this.rootPath, this.cwd, relativePath, numberOfLines)
     await fileReader.readAll()
@@ -52,13 +57,21 @@ export class FileReader {
   readPage() {
     const lines = this.allContent.split("\n")
     const maxDigits = lines.length.toString().length;
-    return lines.map((line, index) => {
+    const pageLines = lines.map((line, index) => {
       const indexStr = (index + this.cursor).toString().padEnd(maxDigits);
       return `${indexStr} : ${line}`;
-    })
+    });
+    if (this.cursor + this.numberOfLines >= this.contentLines) {
+      pageLines.push("<eof>");
+    }
+    return pageLines;
   }
 
   pageDown() {
+    if (this.cursor >= (this.contentLines - this.numberOfLines)) {
+      return [];
+    }
+
     this.cursor += this.numberOfLines
     if (this.cursor > (this.contentLines - this.numberOfLines)) {
       this.cursor = this.contentLines - this.numberOfLines
@@ -67,6 +80,9 @@ export class FileReader {
   }
 
   pageUp() {
+    if (this.cursor === 0) {
+      return [];
+    }
     this.cursor -= this.numberOfLines
     if (this.cursor < 0) {
       this.cursor = 0
