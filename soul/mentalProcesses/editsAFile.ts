@@ -16,7 +16,11 @@ const tools: ToolPossibilities = {
     description: "Page down in the current file.",
   },
   "edit": {
-    description: "Edit a section of the file. Philip provides the start and end lines to edit and the replacement text. The lines in the file will be completely replaced by the new text.",
+    description: indentNicely`
+      Edit a section of the file.
+      Philip provides the start and end lines to edit and the replacement text. The new lines will completely replace the existing lines.
+      If Philip is editing code, then make sure to return actual *code* (and ONLY code), not commentary.
+    `,
     params: z.object({
       start: z.number().describe("starting line number."),
       end: z.number().describe("ending line number."),

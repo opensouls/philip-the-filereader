@@ -82,7 +82,7 @@ export class SoulSupport {
     await this.waitForSpeaking()
     this.soul.dispatch({
       name: "Philip",
-      action: "listed",
+      action: `listed the directory ${this.fileSystem.cwd} and found ${list.length} entries: \n`,
       content: list.map(entry => `${entry.name} ${entry.isDirectory ? "<DIR>" : "<FILE>"}`).join("\n"),
       _metadata: {
         cwd: this.fileSystem.cwd,
