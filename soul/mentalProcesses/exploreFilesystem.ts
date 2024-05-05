@@ -39,7 +39,7 @@ const exploreFilesystem: MentalProcess = async ({ workingMemory }) => {
   const { speak, dispatch, log } = useActions()
   const { invocationCount } = useProcessManager()
   const { invokingPerception } = usePerceptions()
-  const { fetch } = useSoulStore()
+  const { fetch, set } = useSoulStore()
   // const latestList = useSoulMemory<ListEntry[]>("latestList", [])
 
   if (invocationCount === 0) {
@@ -58,9 +58,6 @@ const exploreFilesystem: MentalProcess = async ({ workingMemory }) => {
 
     log("got list", list)
     const entries = await Promise.all(list.map(async (entry ) => {
-      if (entry.isDirectory) {
-        return null
-      }
       const res = await fetch(`${cwd}/${entry.name}`)
       if (!res) {
         return null
@@ -84,6 +81,18 @@ const exploreFilesystem: MentalProcess = async ({ workingMemory }) => {
         ## ${workingMemory.soulName} remembers already reading the following files in this directory:
         ${memories.join("\n\n")}
       `)
+
+      const [, takeaway] = await internalMonologue(
+        workingMemory,
+        indentNicely`
+          Given what ${workingMemory.soulName} remembers about the files in the directory, what is their 1-4 sentence takeway on the directory itself?
+        `,
+        {
+          model: "exp/llama-v3-70b-instruct",
+        }
+      )
+      log("setting directory takeaway", takeaway)
+      set(cwd, takeaway)
     }
 
 

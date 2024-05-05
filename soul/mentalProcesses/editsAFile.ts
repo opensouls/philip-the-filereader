@@ -95,7 +95,7 @@ const editsAFile: MentalProcess = async ({ workingMemory }) => {
   await updateNotes(withDialog)
 
   log("choosing tools")
-  const [toolMemory, toolChoice, args] = await toolChooser(withDialog, tools)
+  const [, toolChoice, args] = await toolChooser(withDialog, tools)
   
   log("Tool choice: ", toolChoice, "Args: ", args)
 
