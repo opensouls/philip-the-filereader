@@ -1,5 +1,6 @@
 import path from "node:path"
 import fs from "node:fs/promises"
+import { $ } from "bun";
 
 export class FileSystem {
 
@@ -39,7 +40,10 @@ export class FileEditor {
   private cursor = 0
   private absoluteUrl: string
 
+  private undoStack: string[]
+
   constructor(public rootPath: string, public cwd: string, public relativePath: string, public numberOfLines: number) {
+    this.undoStack = []
     this.absoluteUrl = path.join(rootPath, cwd, relativePath)
   }
 
@@ -59,10 +63,30 @@ export class FileEditor {
   }
 
   async edit(start: number, end: number, replacement: string) {
-    const lines = this.allContent.split("\n")
-    lines.splice(start, end - start, replacement)
-    this.allContent = lines.join("\n")
-    await fs.writeFile(this.absoluteUrl, this.allContent)
+    // Save the current content to the undo stack
+    this.undoStack.push(this.allContent);
+
+    const lines = this.allContent.split("\n");
+    lines.splice(start, end - start, replacement);
+    this.allContent = lines.join("\n");
+    await fs.writeFile(this.absoluteUrl, this.allContent);
+
+    // now let's run tsc
+    const { stderr, exitCode } = await $`npx tsc --noEmit --project tsconfig.json`.nothrow().quiet();
+    if (exitCode !== 0) {
+      console.error("Error running tsc", stderr)
+      await this.undo()
+      return [false, stderr]
+    }
+
+    return [true, ""]
+  }
+
+  async undo() {
+    if (this.undoStack.length > 0) {
+      this.allContent = this.undoStack.pop() as string;
+      await fs.writeFile(this.absoluteUrl, this.allContent);
+    }
   }
 
   pageDown() {

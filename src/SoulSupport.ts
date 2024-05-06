@@ -1,4 +1,4 @@
-import { ActionEvent, Soul } from "@opensouls/engine"
+import { ActionEvent, Soul, indentNicely } from "@opensouls/engine"
 import { FileSystem, FileEditor } from "./FileSystem.js"
 import { speakPlayHT } from "./audio/playht.js"
 import { Readable } from "node:stream"
@@ -102,14 +102,36 @@ export class SoulSupport {
 
     const { start, end, replacement } = evt._metadata as { start: number, end: number, replacement: string }
     
-    log("would have edited file", this.reader.relativePath, start, end, replacement)
-    // await this.reader.edit(start, end, replacement)
-
+    log("editing lines", this.reader.relativePath, start, end, replacement)
+    const [isSuccess, errorText] = await this.reader.edit(start, end, replacement)
     await this.waitForSpeaking()
+    if (isSuccess) {
+      this.soul.dispatch({
+        name: "Philip",
+        action: "edited",
+        content: `Philip edited the file ${this.reader.relativePath} from line ${start} to ${end} with "${replacement}".`,
+        _metadata: {
+          cwd: this.reader.cwd,
+          fileName: this.reader.relativePath,
+          screen: this.reader.readPage().join("\n"),
+        }
+      })
+
+      return
+    }
+
+    console.error("error editing file", errorText)
+
     this.soul.dispatch({
       name: "Philip",
-      action: "edited",
-      content: `Philip edited the file ${this.reader.relativePath} from line ${start} to ${end} with "${replacement}".`,
+      action: "failed to edit",
+      content: indentNicely`
+        the file ${this.reader.relativePath} from line ${start} to ${end} with "${replacement}". 
+        Error from running 'npx tsc': 
+        > ${errorText}
+
+        The change has been undone automatically.
+      `,
       _metadata: {
         cwd: this.reader.cwd,
         fileName: this.reader.relativePath,
