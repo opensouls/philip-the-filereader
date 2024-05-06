@@ -45,6 +45,7 @@ const editsAFile: MentalProcess<{start: number, end: number, screen: string, com
       * Do not include any additional commentary (if you must make a comment, wrap it in a code comment).
       * Do not include any line numbers (The line numbers from the Code Screen From Open Editor section are only there because they are from the text editor).
       * Provide complete code, the code/text you return will *completely* replace any code/text in lines ${params.start} to ${params.end}.
+      * Whitespace (indentation) is important, so make sure to include any indentation necessary when replacing the lines.
 
       Please reply with *only* the text/code replacing lines ${params.start} through ${params.end}.
     `,
