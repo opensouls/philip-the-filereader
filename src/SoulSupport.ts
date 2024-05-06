@@ -48,7 +48,7 @@ export class SoulSupport {
   }
 
   async onSays(evt: ActionEvent) {
-    log("on says event", await evt.content(), evt._metadata)
+    // log("on says event", await evt.content(), evt._metadata)
     // const mp3Stream = await speakPlayHT(Readable.from(evt.stream()))
     // const pcmStream = mp3ToPCM(mp3Stream, controller.signal)
 
@@ -77,7 +77,7 @@ export class SoulSupport {
   }
 
   async onLs(evt: ActionEvent) {
-    console.log("on ls event", await evt.content())
+    log("on ls event", await evt.content())
 
     const list = await this.fileSystem.list()
 

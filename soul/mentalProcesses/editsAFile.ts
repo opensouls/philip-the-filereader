@@ -54,7 +54,7 @@ const editsAFile: MentalProcess<{start: number, end: number, screen: string, com
   log("replacement code", onlyCode)
 
   dispatch({
-    action: "editsLines",
+    action: "editLines",
     content: `Philip changes lines ${params.start} to ${params.end} to ${onlyCode}`,
     _metadata: {
       start: params.start,
