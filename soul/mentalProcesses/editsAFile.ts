@@ -1,8 +1,39 @@
 
-import { MentalProcess, indentNicely, useActions } from "@opensouls/engine";
+import { MentalProcess, indentNicely, useActions, createCognitiveStep, WorkingMemory, ChatMessageRoleEnum} from "@opensouls/engine";
 import readsAFile from "./readsAFile.js";
 import instruction from "../cognitiveSteps/instruction.js";
 import { BIG_MODEL, FAST_MODEL } from "../lib/models.js";
+
+const codeInstruction = createCognitiveStep((instructions: string) => {
+  return {
+    command: ({ soulName }: WorkingMemory) => {
+      return {
+        role: ChatMessageRoleEnum.System,
+        name: soulName,
+        content: instructions,
+      };
+    },
+    postProcess: (workingMemory, code ) => {
+      let stripped = code
+      if (stripped.startsWith("```")) {
+        stripped = stripped.split("\n").slice(1, -1).join("\n")
+      }
+      if (stripped.endsWith("```")) {
+        stripped = stripped.split("\n").slice(0, -1).join("\n")
+      }
+
+      return [
+        {
+          role: ChatMessageRoleEnum.Assistant,
+          content: `New code: ${stripped}`
+        },
+        stripped
+      ]
+    }
+  };
+});
+
+
 
 const editsAFile: MentalProcess<{start: number, end: number, screen: string, commentary: string }> = async ({ workingMemory, params }) => {
   const { log, dispatch  } = useActions()
@@ -17,10 +48,10 @@ const editsAFile: MentalProcess<{start: number, end: number, screen: string, com
 
       <hr />
 
-      Philip has decided to edit lines ${params.start} to ${params.end}. His reasoning so far is:
+      Philip has decided to edit lines ${params.start} to ${params.end}. His reasoning for doing so is:
       > ${params.commentary}
 
-      Please reply in concise detail what text/code changes Philip wants to make (to those line numbers) and *why* he would like to make them.
+      Please reply in concise detail what text/code changes Philip wants to make (only on lines ${params.start}-${params.end}) and *why* he would like to make those changes.
     `,
     { model: BIG_MODEL }
   );
@@ -30,7 +61,7 @@ const editsAFile: MentalProcess<{start: number, end: number, screen: string, com
   // next we'll work with a very clean working memory (just the system prompt)
   const cleanMemory = workingMemory.slice(0,1)
   
-  const [withCode, onlyCode] = await instruction(
+  const [withCode, onlyCode] = await codeInstruction(
     cleanMemory,
     indentNicely`
       Philip has decided to edit lines ${params.start} to ${params.end}.

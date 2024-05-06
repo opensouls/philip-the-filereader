@@ -26,8 +26,15 @@ const tools: ToolPossibilities = {
       file: z.string().describe("The file to read or edit.")
     })
   },
+  "fileATicket": {
+    description: "Files a ticket (feature request, bug report, etc) with Philip's creator. This is useful if the code change is to broad or if Philip doesn't feel comfortable actually changing his code.",
+    params: z.object({
+      subject: z.string().describe("The one line description of the ticket."),
+      content: z.string().describe("the content of the ticket, what Philip would want done.")
+    })
+  },
   "stop": {
-    description: "Stops exploring the file system and chat with the user (after Philip has a good understanding of the codebase).",
+    description: "Stops exploring the file system and chat with the Philip's creator (after Philip has a good understanding of the codebase).",
   },
 }
 
@@ -77,7 +84,7 @@ const exploreFilesystem: MentalProcess = async ({ workingMemory }) => {
     })
 
     if (memories.length > 0) {
-      log("would supply memories:", memories)
+      log("memories of files already explored:", memories)
       workingMemory = workingMemory.withMonologue(indentNicely`
         ## ${workingMemory.soulName} remembers already reading the following files in this directory:
         ${memories.join("\n\n")}
@@ -117,7 +124,6 @@ const exploreFilesystem: MentalProcess = async ({ workingMemory }) => {
 
   await updateNotes(withDialog)
 
-  log("choosing tools")
   const [toolMemory, toolChoice, args] = await toolChooser(withDialog, tools)
 
   log("Tool choice: ", toolChoice, "Args: ", args)

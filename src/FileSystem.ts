@@ -63,12 +63,12 @@ export class FileEditor {
     })
   }
 
-  async edit(start: number, end: number, replacement: string) {
+  async edit(start: number, end: number, replacement: string): Promise<[boolean, string]> {
     // Save the current content to the undo stack
     this.undoStack.push(this.allContent);
 
     const lines = this.allContent.split("\n");
-    lines.splice(start, end - start, replacement);
+    lines.splice(start, end - start + 1, replacement);
     this.allContent = lines.join("\n");
     await fs.writeFile(this.absoluteUrl, this.allContent);
 
@@ -77,13 +77,7 @@ export class FileEditor {
     if (exitCode !== 0) {
       console.error("Error running tsc", stdout.toString('utf-8'), stderr.toString('utf-8'))
       await this.undo()
-      return [false, indentNicely`
-        ## stderr
-        ${stderr.toString('utf-8')}
-
-        ## stdout
-        ${stdout.toString('utf-8')}
-      `]
+      return [false, stdout.toString('utf-8')]
     }
 
     return [true, ""]

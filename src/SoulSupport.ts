@@ -30,6 +30,7 @@ export class SoulSupport {
     this.soul.on("pageUp", this.onPageUp.bind(this))
 
     this.soul.on("editLines", this.onEditLines.bind(this))
+    this.soul.on("fileATicket", this.onFileATicket.bind(this))
   }
 
   async start() {
@@ -104,7 +105,9 @@ export class SoulSupport {
     
     log("editing lines", this.reader.relativePath, start, end, replacement)
     const [isSuccess, errorText] = await this.reader.edit(start, end, replacement)
+    
     await this.waitForSpeaking()
+
     if (isSuccess) {
       this.soul.dispatch({
         name: "Philip",
@@ -128,7 +131,7 @@ export class SoulSupport {
       content: indentNicely`
         the file ${this.reader.relativePath} from line ${start} to ${end} with "${replacement}". 
         Error from running 'npx tsc': 
-        > ${errorText}
+        > ${errorText.split("\n").slice(0, 6).join("\n")}
 
         The change has been undone automatically.
       `,
@@ -141,7 +144,7 @@ export class SoulSupport {
   }
 
   async onCd(evt: ActionEvent) {
-    console.log("on cd event", await evt.content(), JSON.stringify(evt._metadata))
+    log("on cd event", await evt.content(), JSON.stringify(evt._metadata))
 
     const list = await this.fileSystem.changeDirectory(evt._metadata?.directory as string)
 
@@ -159,7 +162,7 @@ export class SoulSupport {
   }
 
   async openInEditor(evt: ActionEvent) {
-    console.log("on read event", await evt.content(), evt._metadata)
+    log("on read event", await evt.content(), evt._metadata)
 
     const fileReader = await this.fileSystem.openInEditor(evt._metadata?.file as string)
     this.reader = fileReader
@@ -180,7 +183,7 @@ export class SoulSupport {
   }
 
   async onPageDown(_evt: ActionEvent) {
-    console.log("page down event")
+    log("page down event")
     if (!this.reader) {
       throw new Error("Reader not initialized")
     }
@@ -188,7 +191,7 @@ export class SoulSupport {
     const content = this.reader.pageDown()
 
     await this.waitForSpeaking()
-    console.log('shipping page down')
+    log('shipping page down')
 
     this.soul.dispatch({
       name: "Philip",
@@ -203,7 +206,7 @@ export class SoulSupport {
   }
 
   async onPageUp(_evt: ActionEvent) {
-    console.log("page up event")
+    log("page up event")
     if (!this.reader) {
       throw new Error("Reader not initialized")
     }
@@ -211,7 +214,7 @@ export class SoulSupport {
     const content = this.reader.pageUp()
 
     await this.waitForSpeaking()
-    console.log('shipping page up')
+    log('shipping page up')
     this.soul.dispatch({
       name: "Philip",
       action: "pagedUp",
@@ -220,6 +223,22 @@ export class SoulSupport {
         cwd: this.reader.cwd,
         fileName: this.reader.relativePath,
         screen: content,
+      }
+    })
+  }
+
+  async onFileATicket(evt: ActionEvent) {
+    log("------> on file a ticket event\n", JSON.stringify(evt._metadata, null, 2))
+    const { content } = evt._metadata as { content: string }
+
+    await this.waitForSpeaking()
+
+    this.soul.dispatch({
+      name: "Philip",
+      action: "filed",
+      content: `a ticket with the subject: ${evt._metadata?.subject}`,
+      _metadata: {
+        content,
       }
     })
   }

@@ -30,6 +30,13 @@ const tools: ToolPossibilities = {
   },
   "exit": {
     description: "Exit reading the current file",
+  },
+  "fileATicket": {
+    description: "Files a ticket (feature request, bug report, etc) with Philip's creator. This is useful if the code change is to broad or if Philip doesn't feel comfortable actually changing his code.",
+    params: z.object({
+      subject: z.string().describe("The one line description of the ticket."),
+      content: z.string().describe("the content of the ticket, what Philip would want done.")
+    })
   }
 }
 
@@ -102,7 +109,6 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
 
   await updateNotes(withDialog)
 
-  log("choosing tools")
   const [, toolChoice, args] = await toolChooser(withDialog, tools)
   
   log("Tool choice: ", toolChoice, "Args: ", args)
