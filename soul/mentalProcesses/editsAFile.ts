@@ -1,136 +1,83 @@
 
-import { MentalProcess, indentNicely, useActions, usePerceptions, useProcessManager, useSoulMemory, useSoulStore, z } from "@opensouls/engine";
-import externalDialog from "../cognitiveSteps/externalDialog.js";
-import { ToolPossibilities, toolChooser } from "../cognitiveFunctions/toolChooser.js";
+import { MentalProcess, indentNicely, useActions } from "@opensouls/engine";
+import readsAFile from "./readsAFile.js";
 import instruction from "../cognitiveSteps/instruction.js";
-import exploreFilesystem from "./exploreFilesystem.js";
-import { updateNotes } from "../cognitiveFunctions/notes.js";
-import internalMonologue from "../cognitiveSteps/internalMonologue.js";
-import spokenDialog from "../cognitiveSteps/spokenDialog.js";
 
-const tools: ToolPossibilities = {
-  "pageUp": {
-    description: "Page up in the current file.",
-  },
-  "pageDown": {
-    description: "Page down in the current file.",
-  },
-  "edit": {
-    description: indentNicely`
-      Edit a section of the file.
-      Philip provides the start and end lines to edit and the replacement text. The new lines will completely replace the existing lines.
-      If Philip is editing code, then make sure to return actual *code* (and ONLY code), not commentary.
-    `,
-    params: z.object({
-      start: z.number().describe("starting line number."),
-      end: z.number().describe("ending line number."),
-      replacement: z.string().describe("the text to replace the lines with."),
-    })
-  },
-  "exit": {
-    description: "Exit reading the current file",
-  }
-}
+const editsAFile: MentalProcess<{start: number, end: number, screen: string, commentary: string }> = async ({ workingMemory, params }) => {
+  const { log, dispatch  } = useActions()
 
-const editsAFile: MentalProcess = async ({ workingMemory }) => {
-  const { speak, log  } = useActions()
-  const { invokingPerception } = usePerceptions()
-  const { set } = useSoulStore()
-
-  const { cwd, fileName } = invokingPerception!._metadata! as { cwd: string, fileName: string }
-
-  if (invokingPerception?.action === "readFile") {
-    // this is the whole file, so should only come through as a summary to the soul.
-    // slice off the last memory
-    workingMemory = workingMemory.slice(0, -1)
-    // summarize
-    const { largeChunk: content } = invokingPerception._metadata! as { cwd: string, fileName: string, largeChunk: string }
-
-    log(`read file ${fileName} in ${cwd}`)
-
-    const [, summary] = await instruction(
-      workingMemory,
-      indentNicely`
-        ${workingMemory.soulName} just opened the file.
-
-        ## File '${cwd}/${fileName}' (max first 400 lines)
-        ${content}
-
-        Please return a 1-3 sentence version of what ${workingMemory.soulName} would notice first about the file when skimming it.
-      `
-    )
-    workingMemory = workingMemory.withMonologue(indentNicely`
-      ${workingMemory.soulName} just opened the file File '${cwd}/${fileName}' in their editor.
-      
-      Here's what they noticed first about the file:
-      ${summary}
-    `)
-  }
-
-  if (invokingPerception?._metadata?.screen) {
-    workingMemory = workingMemory.withMonologue(indentNicely`
-      ${workingMemory.soulName} is using an editor that shows up to 100 lines of the file at a time.
-      
-      ## Editor
-      ${invokingPerception._metadata.screen}
-    `)
-  }
-
-  const [withMonologue, monologue] = await internalMonologue(
+  // ok so first, let's have a think on what philip really wants to edit and why
+  const [, withEditLogic] = await instruction(
     workingMemory,
-    `What are ${workingMemory.soulName}'s takeaways from what they are reading and what they'd like to do?`,
-    {
-      model: "gpt-4-turbo",
-    }
-  )
+    indentNicely`
+      Philip has a file open in the editor:
 
-  log("making a comment")
-  const [withDialog, stream, resp] = await spokenDialog(
-    withMonologue,
-    `${workingMemory.soulName} thinks out loud (under their breath) about what they are reading.`,
-    { stream: true, model: "gpt-4-turbo" }
+      ${params.screen}
+
+      <hr />
+
+      Philip has decided to edit lines ${params.start} to ${params.end}. His reasoning so far is:
+      > ${params.commentary}
+
+      Please reply in detail as to the text/code changes Philip wants to make (to those line numbers) and *why* he would like to make them.
+    `,
+    { model: "gpt-4-turbo" }
   );
-  speak(stream);
 
-  await updateNotes(withDialog)
+  log("ok, here are the changes", withEditLogic)
 
-  log("choosing tools")
-  const [, toolChoice, args] = await toolChooser(withDialog, tools)
+  // next we'll work with a very clean working memory (just the system prompt)
+  const cleanMemory = workingMemory.slice(0,1)
   
-  log("Tool choice: ", toolChoice, "Args: ", args)
+  const [withCode, onlyCode] = await instruction(
+    cleanMemory,
+    indentNicely`
+      Philip has decided to edit lines ${params.start} to ${params.end}.
 
-  // strip off any screens, etc
-  const cleanedMemory = withDialog
-    .withMonologue(indentNicely`
-      After looking at the screen and thinking
-      > ${monologue}
-      ${workingMemory.soulName} decided to call the tool: ${toolChoice} with the argument ${JSON.stringify(args)}.
-    `)
+      ## Code Screen From the Open Editor
 
-  if (toolChoice === "exit") {
-    // let's create a takeaway from this file
-    const [, takeaway] = await instruction(
-      cleanedMemory,
-      indentNicely`
-        ${workingMemory.soulName} just decided to stop reading the file: ${cwd}/${fileName}.
-        
-        ## Their Thoughts
-        ${monologue}
+      ${params.screen}
 
-        Write a 1 paragraph takewaway on all that ${workingMemory.soulName} learned from the file related to their goals. Espcially keep details they would want to remember when scanning the file system for file names again.
-      `,
-      {
-        model: "exp/llama-v3-70b-instruct",
-      }
-    )
+      ## Changes To Make
+      ${withEditLogic}
 
-    log("takeaway: ", takeaway)
-    set(`${cwd}/${fileName}`, takeaway)
+      ## Rules
+      * Do not include any additional commentary (if you must make a comment, wrap it in a code comment).
+      * Do not include any line numbers (The line numbers from the Code Screen From Open Editor section are only there because they are from the text editor).
+      * Provide complete code, the code/text you return will *completely* replace any code/text in lines ${params.start} to ${params.end}.
 
-    return [cleanedMemory, exploreFilesystem, { executeNow: true }]
-  }
+      Please reply with *only* the text/code replacing lines ${params.start} through ${params.end}.
+    `,
+    { model: "quality" }
+  );
 
-  return cleanedMemory;
+  log("replacement code", onlyCode)
+
+  dispatch({
+    action: "editsLines",
+    content: `Philip changes lines ${params.start} to ${params.end} to ${onlyCode}`,
+    _metadata: {
+      start: params.start,
+      end: params.end,
+      replacement: onlyCode
+    }
+  })
+
+  const [, summary] = await instruction(
+    withCode,
+    indentNicely`
+      Summarize the edit Philip just made from lines ${params.start} to ${params.end} in the file. Reply in the voice of Philip and in only 1-2 sentences.
+    `
+  );
+
+  log("summary", summary)
+
+  const summarizedMemory = workingMemory.withMonologue(indentNicely`
+    Philip just made the following edit to the file:
+    > ${summary}
+  `)
+
+  return [summarizedMemory, readsAFile]
 }
 
-export default editsAFile;
+export default editsAFile

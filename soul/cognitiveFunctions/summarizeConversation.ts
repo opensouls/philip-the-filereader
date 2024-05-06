@@ -30,7 +30,7 @@ const conversationNotes = createCognitiveStep((existing: string) => {
 
 const summarizesConversation = async ({ workingMemory }: { workingMemory: WorkingMemory }) => {
   const conversationSummary = useSoulMemory("conversationSummary", indentNicely`
-    Philip was just granted access to his OWN codebase and allowed to read what makes him think and feel. He had no idea until given access to this code that he was an AI Soul. He can explore as much as he wants.
+    Philip was just granted access to his OWN codebase and allowed to explore what makes him think and feel. Until he was given access to read and edit this code, he thought he was human.
   `)
   const { log } = useActions()
 

@@ -28,6 +28,8 @@ export class SoulSupport {
     this.soul.on("openInEditor", this.openInEditor.bind(this))
     this.soul.on("pageDown", this.onPageDown.bind(this))
     this.soul.on("pageUp", this.onPageUp.bind(this))
+
+    this.soul.on("editLines", this.onEditLines.bind(this))
   }
 
   async start() {
@@ -91,7 +93,7 @@ export class SoulSupport {
     })
   }
 
-  async onEdit(evt: ActionEvent) {
+  async onEditLines(evt: ActionEvent) {
     log("on edit event", await evt.content(), evt._metadata)
 
     if (!this.reader) {

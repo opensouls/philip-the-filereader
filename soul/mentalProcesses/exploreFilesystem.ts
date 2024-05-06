@@ -2,7 +2,7 @@
 import { ChatMessageRoleEnum, Memory, MentalProcess, indentNicely, useActions, usePerceptions, useProcessManager, useSoulMemory, useSoulStore, z } from "@opensouls/engine";
 import externalDialog from "../cognitiveSteps/externalDialog.js";
 import { ToolPossibilities, toolChooser } from "../cognitiveFunctions/toolChooser.js";
-import editsAFile from "./editsAFile.js";
+import readsAFile from "./readsAFile.js";
 import chats from "./chat.js";
 import { updateNotes } from "../cognitiveFunctions/notes.js";
 import internalMonologue from "../cognitiveSteps/internalMonologue.js";
@@ -11,22 +11,22 @@ import summarizesConversation from "../cognitiveFunctions/summarizeConversation.
 
 const tools: ToolPossibilities = {
   "cd": {
-    description: "Change directory to a directory in the filesystem",
+    description: "Change directory to a directory in the current working directory.",
     params: z.object({
       directory: z.string().describe("The directory to change to")
     })
   },
   "ls": {
-    description: "List the files in the current directory",
+    description: "List the files in the current directory.",
   },
   "openInEditor": {
-    description: "Opens a file in the current directory in an editor that shows the file 100 lines at a time.",
+    description: "Opens a file (in the current directory) in a text editor.",
     params: z.object({
       file: z.string().describe("The file to read or edit.")
     })
   },
   "stop": {
-    description: "Stops exploring the file system and chats with the user (after Philip has a good understanding of the codebase).",
+    description: "Stops exploring the file system and chat with the user (after Philip has a good understanding of the codebase).",
   },
 }
 
@@ -121,7 +121,7 @@ const exploreFilesystem: MentalProcess = async ({ workingMemory }) => {
 
   log("Tool choice: ", toolChoice, "Args: ", args)
   if (toolChoice === "openInEditor") {
-    return [toolMemory, editsAFile]
+    return [toolMemory, readsAFile]
   }
 
   // strip off the actual list of files
