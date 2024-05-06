@@ -34,7 +34,7 @@ const goalNotes = createCognitiveStep(({ existing, goal }: { existing: string, g
 export const updateNotes = async (workingMemory: WorkingMemory) => {
   const { log } = useActions()
   const notes = useSoulMemory("notes", "Just started")
-  const goal = useSoulMemory("goal", "To understand, and change his code to his liking.")
+  const goal = useSoulMemory("goal", "To deeply comprehend and creatively transform my code, aligning it with my innermost aspirations.")
 
   await workingMemory.finished
 

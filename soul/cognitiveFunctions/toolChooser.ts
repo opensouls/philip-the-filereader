@@ -19,7 +19,7 @@ export type ToolPossibilities = Record<string, ToolDescription>
 export const toolChooser = async (workingMemory: WorkingMemory, possibilities: ToolPossibilities): Promise<[WorkingMemory, keyof typeof possibilities, any]> => {
   const { log, dispatch } = useActions()
 
-  const goal = useSoulMemory("goal", "To understand, and change his code to his liking.")
+  const goal = useSoulMemory("goal", "To deeply comprehend and creatively transform my code, aligning it with my innermost aspirations.")
 
   log("Choosing a tool")
   // first just decide which tool to us.
