@@ -44,7 +44,14 @@ export const updateNotes = async (workingMemory: WorkingMemory) => {
 
     try {
         const [, updatedNotes] = await goalNotes(
-            workingMemory,
+            workingMemory.map((mem) => {
+              const content = mem.content as string
+              
+              return {
+                ...mem,
+                content: content.includes("## Editor Screen") ? content.split("## Editor Screen")[0] : mem.content
+              }
+            }),
             {
                 existing: notes.current,
                 goal: goal.current
