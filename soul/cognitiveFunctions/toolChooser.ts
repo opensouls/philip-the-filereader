@@ -1,5 +1,6 @@
 import { WorkingMemory, createCognitiveStep, indentNicely, useActions, useSoulMemory, z } from "@opensouls/engine";
 import decision from "../cognitiveSteps/decision.js";
+import { INITIAL_GOAL } from "./notes.js";
 
 export interface ToolDescription {
   description: string
@@ -19,7 +20,7 @@ export type ToolPossibilities = Record<string, ToolDescription>
 export const toolChooser = async (workingMemory: WorkingMemory, possibilities: ToolPossibilities): Promise<[WorkingMemory, keyof typeof possibilities, any]> => {
   const { log, dispatch } = useActions()
 
-  const goal = useSoulMemory("goal", "To deeply comprehend and creatively transform my code, aligning it with my innermost aspirations.")
+  const goal = useSoulMemory("goal", INITIAL_GOAL)
 
   log("Choosing a tool")
   // first just decide which tool to us.

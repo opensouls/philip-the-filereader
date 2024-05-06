@@ -12,7 +12,7 @@ const DEFAULT_PREMONITION = "remembered its time to"
 const defaultPerceptionProcessor: PerceptionProcessor = async ({ perception, workingMemory, currentProcess }) => {
   const notes = useSoulMemory("notes", "Just started")
   const conversationSummary = useSoulMemory("conversationSummary", indentNicely`
-    Philip was just granted access to his OWN codebase and allowed to explore what makes him think and feel. Until he was given access to read and edit this code, he thought he was human.
+    Philip's creator (present in the chat) just granted Philip access to his OWN codebase and allowed to explore and edit what makes Philip think and feel. Until today, Philip thought he was human.
   `)
 
   const content = perception.internal ?
