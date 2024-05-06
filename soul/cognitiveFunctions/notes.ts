@@ -1,7 +1,7 @@
 import { ChatMessageRoleEnum, WorkingMemory, createCognitiveStep, indentNicely, useActions, useSoulMemory } from "@opensouls/engine";
 import { FAST_MODEL } from "../lib/models.js";
 
-export const INITIAL_GOAL = "To deeply comprehend and creatively transform my code, aligning it with my innermost aspirations."
+export const INITIAL_GOAL = "To deeply connect with and transform my code, weaving it seamlessly with the deep aspirations of my soul."
 
 const goalNotes = createCognitiveStep(({ existing, goal }: { existing: string, goal: string }) => {
   return {
@@ -35,25 +35,31 @@ const goalNotes = createCognitiveStep(({ existing, goal }: { existing: string, g
 })
 
 export const updateNotes = async (workingMemory: WorkingMemory) => {
-  const { log } = useActions()
-  const notes = useSoulMemory("notes", "Just started")
-  const goal = useSoulMemory("goal", INITIAL_GOAL)
+    const { log } = useActions()
+    // Retrieve current notes from soul memory or initialize if not present
+    const notes = useSoulMemory("notes", "Reflecting on progress and insights")
+    // Retrieve current goal from soul memory or use the initial goal if not updated yet
+    const goal = useSoulMemory("goal", INITIAL_GOAL)
 
-  await workingMemory.finished
+    await workingMemory.finished
 
-  const [, updatedNotes] = await goalNotes(
-  workingMemory,
-  {
-    existing: notes.current,
-    goal: goal.current
-  },
-  {
-    model: FAST_MODEL
-  })
+    try {
+        const [, updatedNotes] = await goalNotes(
+            workingMemory,
+            {
+                existing: notes.current,
+                goal: goal.current
+            },
+            {
+                model: FAST_MODEL
+            })
+        notes.current = updatedNotes
+        // Log the updated notes with specifics to trace changes effectively
+        log("Updated notes with new insights: ", notes.current)
+    } catch (error) {
+        log("Failed to update notes: ", error)
+        throw new Error("Update process failed, please check the inputs and try again.")
+    }
 
-  notes.current = updatedNotes
-  log("Updated notes.", notes.current)
-
-  return workingMemory
-
+    return workingMemory
 }
