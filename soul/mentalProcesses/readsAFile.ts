@@ -8,6 +8,7 @@ import internalMonologue from "../cognitiveSteps/internalMonologue.js";
 import spokenDialog from "../cognitiveSteps/spokenDialog.js";
 import editsAFile from "./editsAFile.js";
 import summarizesConversation from "../cognitiveFunctions/summarizeConversation.js";
+import { BIG_MODEL, FAST_MODEL } from "../lib/models.js";
 
 const tools: ToolPossibilities = {
   "pageUp": {
@@ -87,7 +88,7 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
     workingMemory,
     `What are ${workingMemory.soulName}'s takeaways from what they are reading and what they'd like to do?`,
     {
-      model: "gpt-4-turbo",
+      model: BIG_MODEL,
     }
   )
 
@@ -95,7 +96,7 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
   const [withDialog, stream, resp] = await spokenDialog(
     withMonologue,
     `${workingMemory.soulName} thinks out loud (under their breath) about what they are reading.`,
-    { stream: true, model: "gpt-4-turbo" }
+    { stream: true, model: BIG_MODEL }
   );
   speak(stream);
 
@@ -136,7 +137,7 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
         Write a 2-4 sentence takewaway on what ${workingMemory.soulName} learned from the file, related to their goal. Espcially keep details they would want to remember when scanning the file system for file names again.
       `,
       {
-        model: "exp/llama-v3-70b-instruct",
+        model: FAST_MODEL,
       }
     )
 

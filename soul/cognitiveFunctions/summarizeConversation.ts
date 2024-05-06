@@ -1,6 +1,7 @@
 
 import { ChatMessageRoleEnum, WorkingMemory, createCognitiveStep, indentNicely, useActions, useSoulMemory } from "@opensouls/engine";
 import internalMonologue from "../cognitiveSteps/internalMonologue.js";
+import { FAST_MODEL } from "../lib/models.js";
 
 const conversationNotes = createCognitiveStep((existing: string) => {
   return {
@@ -36,17 +37,17 @@ const summarizesConversation = async ({ workingMemory }: { workingMemory: Workin
 
   let memory = workingMemory
 
-  if (memory.memories.length > 10) {
+  if (memory.memories.length > 8) {
     log("updating conversation notes, and compressing memory");
     [memory] = await internalMonologue(memory, { instructions: "What have I learned?", verb: "noted" })
 
-    const [, updatedNotes] = await conversationNotes(memory, conversationSummary.current)
+    const [, updatedNotes] = await conversationNotes(memory, conversationSummary.current, { model: FAST_MODEL })
 
     conversationSummary.current = updatedNotes as string
 
     return workingMemory
       .slice(0,1)
-      .concat(workingMemory.slice(-6))
+      .concat(workingMemory.slice(-4))
   }
 
   return workingMemory

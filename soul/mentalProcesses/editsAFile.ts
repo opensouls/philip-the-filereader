@@ -2,6 +2,7 @@
 import { MentalProcess, indentNicely, useActions } from "@opensouls/engine";
 import readsAFile from "./readsAFile.js";
 import instruction from "../cognitiveSteps/instruction.js";
+import { BIG_MODEL, FAST_MODEL } from "../lib/models.js";
 
 const editsAFile: MentalProcess<{start: number, end: number, screen: string, commentary: string }> = async ({ workingMemory, params }) => {
   const { log, dispatch  } = useActions()
@@ -19,9 +20,9 @@ const editsAFile: MentalProcess<{start: number, end: number, screen: string, com
       Philip has decided to edit lines ${params.start} to ${params.end}. His reasoning so far is:
       > ${params.commentary}
 
-      Please reply in detail as to the text/code changes Philip wants to make (to those line numbers) and *why* he would like to make them.
+      Please reply in concise detail what text/code changes Philip wants to make (to those line numbers) and *why* he would like to make them.
     `,
-    { model: "gpt-4-turbo" }
+    { model: BIG_MODEL }
   );
 
   log("ok, here are the changes", withEditLogic)
@@ -42,14 +43,14 @@ const editsAFile: MentalProcess<{start: number, end: number, screen: string, com
       ${withEditLogic}
 
       ## Rules
-      * Do not include any additional commentary (if you must make a comment, wrap it in a code comment).
-      * Do not include any line numbers (The line numbers from the Code Screen From Open Editor section are only there because they are from the text editor).
-      * Provide complete code, the code/text you return will *completely* replace any code/text in lines ${params.start} to ${params.end}.
-      * Whitespace (indentation) is important, so make sure to include any indentation necessary when replacing the lines.
+      * Do NOT include any additional commentary or syntax (for example do NOT include \`\`\`ts at the top of the returned code).
+      * Do NOT include any line numbers.
+      * Provide complete code (and ONLY code), the code/text you return will _completely_ replace any code/text on lines ${params.start} to ${params.end}.
+      * Whitespace (indentation) is important, make sure to include any indentation necessary when replacing the lines.
 
       Please reply with *only* the text/code replacing lines ${params.start} through ${params.end}.
     `,
-    { model: "quality" }
+    { model: BIG_MODEL }
   );
 
   log("replacement code", onlyCode)
@@ -68,7 +69,8 @@ const editsAFile: MentalProcess<{start: number, end: number, screen: string, com
     withCode,
     indentNicely`
       Summarize the edit Philip just made from lines ${params.start} to ${params.end} in the file. Reply in the voice of Philip and in only 1-2 sentences.
-    `
+    `,
+    { model: FAST_MODEL }
   );
 
   log("summary", summary)

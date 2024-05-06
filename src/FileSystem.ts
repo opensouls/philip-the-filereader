@@ -55,7 +55,7 @@ export class FileEditor {
   }
 
   readPage() {
-    const lines = this.allContent.split("\n")
+    const lines = this.allContent.split("\n").slice(this.cursor, this.cursor + this.numberOfLines)
     const maxDigits = lines.length.toString().length;
     return lines.map((line, index) => {
       const indexStr = (index + this.cursor).toString().padEnd(maxDigits);

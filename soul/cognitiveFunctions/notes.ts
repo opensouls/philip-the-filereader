@@ -1,4 +1,5 @@
 import { ChatMessageRoleEnum, WorkingMemory, createCognitiveStep, indentNicely, useActions, useSoulMemory } from "@opensouls/engine";
+import { FAST_MODEL } from "../lib/models.js";
 
 export const INITIAL_GOAL = "To deeply comprehend and creatively transform my code, aligning it with my innermost aspirations."
 
@@ -47,7 +48,7 @@ export const updateNotes = async (workingMemory: WorkingMemory) => {
     goal: goal.current
   },
   {
-    model: "exp/llama-v3-70b-instruct"
+    model: FAST_MODEL
   })
 
   notes.current = updatedNotes

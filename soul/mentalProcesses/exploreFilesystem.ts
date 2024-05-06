@@ -8,6 +8,7 @@ import { updateNotes } from "../cognitiveFunctions/notes.js";
 import internalMonologue from "../cognitiveSteps/internalMonologue.js";
 import spokenDialog from "../cognitiveSteps/spokenDialog.js";
 import summarizesConversation from "../cognitiveFunctions/summarizeConversation.js";
+import { BIG_MODEL, FAST_MODEL } from "../lib/models.js";
 
 const tools: ToolPossibilities = {
   "cd": {
@@ -88,7 +89,7 @@ const exploreFilesystem: MentalProcess = async ({ workingMemory }) => {
           Given what ${workingMemory.soulName} remembers about the files in the directory, what is their 1-4 sentence takeway on the directory itself?
         `,
         {
-          model: "exp/llama-v3-70b-instruct",
+          model: FAST_MODEL,
         }
       )
       log("setting directory takeaway", takeaway)
@@ -102,7 +103,7 @@ const exploreFilesystem: MentalProcess = async ({ workingMemory }) => {
     workingMemory,
     `What is ${workingMemory.soulName}'s feelings after reading that list of files? How do these files relate to their goal?`,
     {
-      model: "gpt-4-turbo",
+      model: BIG_MODEL,
     }
   )
 
@@ -110,7 +111,7 @@ const exploreFilesystem: MentalProcess = async ({ workingMemory }) => {
   const [withDialog, resp] = await spokenDialog(
     withMonologue,
     `${workingMemory.soulName} thinks out loud about what they are seeing.`,
-    { model: "gpt-4-turbo" }
+    { model: BIG_MODEL }
   );
   speak(resp);
 
