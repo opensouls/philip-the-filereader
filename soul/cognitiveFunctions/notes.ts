@@ -19,9 +19,8 @@ const goalNotes = createCognitiveStep(({ existing, goal }: { existing: string, g
           Keep updated notes on the progress of ${name}'s goal. What information does ${name} need to retain about their current memory in order to complete the goal?
 
           ## Rules
-          * It's ok to keep no notes and just return the Existing Notes if there's no new information.
-          * Keep notes in the speaking style of ${name}.
-          * Keep notes in narrative form.
+          * It's ok to just return the Existing Notes if there's no new information.
+          * Keep notes in narrative form and speaking style of ${name}.
           * Use up to 3 paragraphs if needed (but shorter is better).
           * Keep relevant information from Existing Notes
           * Use abbreviated language to keep the notes as short as possible
