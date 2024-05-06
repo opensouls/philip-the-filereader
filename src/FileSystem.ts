@@ -1,6 +1,7 @@
 import path from "node:path"
 import fs from "node:fs/promises"
 import { $ } from "bun";
+import { indentNicely } from "@opensouls/engine";
 
 export class FileSystem {
 
@@ -72,11 +73,17 @@ export class FileEditor {
     await fs.writeFile(this.absoluteUrl, this.allContent);
 
     // now let's run tsc
-    const { stderr, exitCode } = await $`npx tsc --noEmit --project tsconfig.json`.nothrow().quiet();
+    const { stdout, stderr, exitCode } = await $`npx tsc --noEmit --project tsconfig.json`.nothrow().quiet()
     if (exitCode !== 0) {
-      console.error("Error running tsc", stderr)
+      console.error("Error running tsc", stdout.toString('utf-8'), stderr.toString('utf-8'))
       await this.undo()
-      return [false, stderr]
+      return [false, indentNicely`
+        ## stderr
+        ${stderr.toString('utf-8')}
+
+        ## stdout
+        ${stdout.toString('utf-8')}
+      `]
     }
 
     return [true, ""]

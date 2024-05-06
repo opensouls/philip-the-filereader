@@ -7,6 +7,7 @@ import { updateNotes } from "../cognitiveFunctions/notes.js";
 import internalMonologue from "../cognitiveSteps/internalMonologue.js";
 import spokenDialog from "../cognitiveSteps/spokenDialog.js";
 import editsAFile from "./editsAFile.js";
+import summarizesConversation from "../cognitiveFunctions/summarizeConversation.js";
 
 const tools: ToolPossibilities = {
   "pageUp": {
@@ -68,11 +69,16 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
     `)
   }
 
+  if (["edited", "failed to edit"].includes(invokingPerception?.action || "")) {
+    log("returning to readsAFile from an edit, summarizing")
+    workingMemory = await summarizesConversation({ workingMemory })
+  }
+
   if (invokingPerception?._metadata?.screen) {
     workingMemory = workingMemory.withMonologue(indentNicely`
-      ${workingMemory.soulName} is using an editor that shows up to 100 lines of the file at a time.
+      ${workingMemory.soulName} used an editor to open '${cwd}/${fileName}'. The editor shows up to 100 lines of the file at a time.
       
-      ## Editor
+      ## Editor Screen
       ${screen}
     `)
   }

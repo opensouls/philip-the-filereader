@@ -10,15 +10,15 @@ const chats: MentalProcess = async ({ workingMemory }) => {
   const [withDialog, stream] = await externalDialog(
     workingMemory,
     "Talk to the user about their codebase.",
-    { stream: true, model: "quality" }
+    { stream: true, model: "gpt-4-turbo" }
   );
   speak(stream);
 
   const [, wantsToGoAgain] = await mentalQuery(
     workingMemory,
-    "Philip wants to explore his code again.",
+    "Philip has finished conversing with the interloctur and wants to explore his filesystem again.",
     {
-      model: "exp/llama-v3-70b-instruct"  
+      model: "gpt-4-turbo"  
     }
   )
 
@@ -26,7 +26,7 @@ const chats: MentalProcess = async ({ workingMemory }) => {
     const [withFollowup, stream] = await externalDialog(
       withDialog,
       "Tell the interlocutor that you're going to look at a few more files.",
-      { stream: true, model: "quality" }
+      { stream: true, model: "gpt-4-turbo" }
     );
 
     speak(stream);
