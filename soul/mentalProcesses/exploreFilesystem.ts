@@ -50,14 +50,14 @@ const exploreFilesystem: MentalProcess = async ({ workingMemory }) => {
   const { fetch, set } = useSoulStore()
   // const latestList = useSoulMemory<ListEntry[]>("latestList", [])
 
-  if (invocationCount === 0) {
-    log("dispatching ls")
-    dispatch({
-      action: "ls",
-      content: ""
-    })
-    return workingMemory.withMonologue("Philip lists the files in the current working directory.")
-  }
+if (invocationCount === 0) {
+  log("Philip is invoking the listing of directory contents...")
+  dispatch({
+    action: "ls",
+    content: ""
+  })
+  return workingMemory.withMonologue("Gathering a visual of this space... Philip lists the files in the current working directory, aligning this view with his inner vision.")
+}
 
   workingMemory = await summarizesConversation({ workingMemory })
 
