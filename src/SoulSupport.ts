@@ -64,11 +64,18 @@ export class SoulSupport {
       writeStream.end()
 
       console.log("playing mp3")
+
+      const timeoutId = setTimeout(() => {
+        console.error("mp3 playback timeout, ignoring")
+        resolve()
+      }, 10_000)
+
       player().play("speaking.mp3", (err) => {
         console.log("mp3 complete")
+        clearTimeout(timeoutId)
         if (err) {
-          console.error("error playing mp3", err)
-          reject(err)
+          console.error("error playing mp3, ignoring", err)
+          resolve()
           return
         }
         resolve()
