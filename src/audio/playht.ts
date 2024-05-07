@@ -50,34 +50,11 @@ export async function speakPlayHT(text: string | NodeJS.ReadableStream, speaker 
     outputFormat: 'mp3',
     // playback rate of generated speech
     speed: 1,
+    emotion: "male_surprised",
+    styleGuidance: 10,
+    voiceGuidance: 5, 
   };
-
-  const { readable, writable } = getReadableWritablePair();
   // start streaming!
   const stream = await PlayHT.stream(text, streamingOptions);
   return Readable.from(stream)
-
-  let first = true
-  stream.on("data", (chunk) => {
-    writable.write(chunk);
-    if (first) {
-      log("play ht stream started")
-      first = false
-    }
-    // Do whatever you want with the stream, you could save it to a file, stream it in realtime to the browser or app, or to a telephony system
-  });
-  await new Promise<void>((resolve, reject) => {
-    stream.on("end", () => {
-      log("play ht stream finished")
-      writable.end();
-      resolve();
-    });
-    stream.on("error", (err) => {
-      console.error("stream error: ", err)
-      writable.end();
-      reject(err);
-    });
-  });
-
-  return readable
 }

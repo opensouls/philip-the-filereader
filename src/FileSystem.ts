@@ -1,7 +1,6 @@
 import path from "node:path"
 import fs from "node:fs/promises"
 import { $ } from "bun";
-import { indentNicely } from "@opensouls/engine";
 
 export class FileSystem {
 
@@ -53,7 +52,7 @@ export class FileEditor {
     this.contentLines = this.allContent.split("\n").length
     return this.allContent
   }
-  
+
   readPage() {
     const lines = this.allContent.split("\n").slice(this.cursor, this.cursor + this.numberOfLines)
     const maxDigits = lines.length.toString().length;
