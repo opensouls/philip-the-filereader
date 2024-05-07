@@ -53,14 +53,21 @@ export class FileEditor {
     this.contentLines = this.allContent.split("\n").length
     return this.allContent
   }
-
+  
   readPage() {
     const lines = this.allContent.split("\n").slice(this.cursor, this.cursor + this.numberOfLines)
     const maxDigits = lines.length.toString().length;
-    return lines.map((line, index) => {
+    const output = lines.map((line, index) => {
       const indexStr = (index + this.cursor).toString().padEnd(maxDigits);
       return `${indexStr} : ${line}`;
-    })
+    });
+
+    // Check if the page includes the last line of the file
+    if (this.cursor + this.numberOfLines >= this.contentLines) {
+      output.push("<end_of_file />");
+    }
+
+    return output;
   }
 
   async edit(start: number, end: number, replacement: string): Promise<[boolean, string]> {
