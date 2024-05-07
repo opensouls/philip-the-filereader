@@ -35,12 +35,12 @@ export const toolChooser = async (workingMemory: WorkingMemory, possibilities: T
         ${goal.current}
 
         ### Tools
-        ${workingMemory.soulName} is trying to execute on their goal (or at least make progress on it). They have a few tools at their disposal:
+        ${workingMemory.soulName} is trying to make progress on their goal. They have a few tools at their disposal:
         ${Object.entries(possibilities).map(([key, value]) => `* ${key}: ${value.description}`).join("\n")}
         * none: Do nothing, keep going.
         
-        They are now deciding what to do next.
-        If ${workingMemory.soulName} does not want to use any of those tools, they can choose "none".
+        ${workingMemory.soulName} decides which tool to use.
+        If ${workingMemory.soulName} does not want to use any of those tools, then choose "none".
       `,
       choices: Object.keys(possibilities),
     },

@@ -1,5 +1,5 @@
 
-import { MentalProcess, indentNicely, useActions, usePerceptions, useSoulStore, z } from "@opensouls/engine";
+import { ChatMessageRoleEnum, MentalProcess, indentNicely, useActions, usePerceptions, useSoulStore, z } from "@opensouls/engine";
 import { ToolPossibilities, toolChooser } from "../cognitiveFunctions/toolChooser.js";
 import instruction from "../cognitiveSteps/instruction.js";
 import exploreFilesystem from "./exploreFilesystem.js";
@@ -93,33 +93,44 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
 
   const [withMonologue, monologue] = await internalMonologue(
     workingMemory,
-    `What are ${workingMemory.soulName}'s takeaways from what they are reading and what they'd like to do?`,
+    `What does ${workingMemory.soulName} want to do?`,
     {
       model: BIG_MODEL,
     }
   )
 
-  log("making a comment")
+  log("monologue: ", monologue)
+
   const [withDialog, stream, resp] = await spokenDialog(
     withMonologue,
-    `${workingMemory.soulName} thinks out loud (under their breath) about what they are reading.`,
+    `${workingMemory.soulName} thinks out loud (under their breath) about what they are reading and how they feel about it`,
     { stream: true, model: BIG_MODEL }
   );
   speak(stream);
 
-  await updateNotes(withDialog)
-
-  const [, toolChoice, args] = await toolChooser(withDialog, tools)
+  const [, [, toolChoice, args]] = await Promise.all([
+    updateNotes(withDialog),
+    toolChooser(withDialog, tools)
+  ])
   
   log("Tool choice: ", toolChoice, "Args: ", args)
 
-  // strip off any screens, etc
-  const cleanedMemory = withDialog
-    .withMonologue(indentNicely`
-      After looking at the screen and thinking
-      > ${monologue}
-      ${workingMemory.soulName} decided to call the tool: ${toolChoice} with the argument ${JSON.stringify(args)}.
-    `)
+  const cleanedMemory = workingMemory.concat([
+    {
+      role: ChatMessageRoleEnum.Assistant,
+      content: indentNicely`
+        Philip said: ${await resp}
+      `
+    },
+    {
+      role: ChatMessageRoleEnum.Assistant,
+      content: indentNicely`
+        After looking at the list of files and thinking
+        > ${monologue}
+        ${workingMemory.soulName} decided to call the tool: ${toolChoice} with the argument ${JSON.stringify(args)}.
+      `
+    }
+  ])
 
   if (toolChoice === "edit") {
     const { start, end, commentary } = args
@@ -136,11 +147,8 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
       cleanedMemory,
       indentNicely`
         ${workingMemory.soulName} just decided to stop reading the file: ${cwd}/${fileName}.
-        
-        ## Their Thoughts
-        ${monologue}
 
-        Write a 2-4 sentence takewaway on what ${workingMemory.soulName} learned from the file, related to their goal. Espcially keep details they would want to remember when scanning the file system for file names again.
+        Write a 2-4 sentence takewaway on what ${workingMemory.soulName} learned from the file, related to their goal. Espcially keep details they would want to remember when scanning the file system again.
       `,
       {
         model: FAST_MODEL,

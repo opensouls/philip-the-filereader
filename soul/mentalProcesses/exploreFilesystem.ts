@@ -27,7 +27,7 @@ const tools: ToolPossibilities = {
     })
   },
   "fileATicket": {
-    description: "Files a ticket (feature request, bug report, etc) with Philip's creator. This is useful if the code change is to broad or if Philip doesn't feel comfortable actually changing his code.",
+    description: "Files a ticket (feature request, bug report, etc) with Philip's creator. This is useful if the code change is too broad or if Philip doesn't feel comfortable actually changing his code.",
     params: z.object({
       subject: z.string().describe("The one line description of the ticket."),
       content: z.string().describe("the content of the ticket, what Philip would want done.")
@@ -56,7 +56,7 @@ const exploreFilesystem: MentalProcess = async ({ workingMemory }) => {
       action: "ls",
       content: ""
     })
-    return workingMemory.withMonologue("Philip lists the files in the current directory.")
+    return workingMemory.withMonologue("Philip lists the files in the current working directory.")
   }
 
   workingMemory = await summarizesConversation({ workingMemory })
@@ -72,21 +72,25 @@ const exploreFilesystem: MentalProcess = async ({ workingMemory }) => {
       }
       return {
         name: entry.name,
-        content: res
+        content: res,
+        isDirectory: entry.isDirectory
       }
     }))
 
-    const memories = entries.filter((entry): entry is { name: string; content: string } => Boolean(entry)).map(({ name, content }) => {
+    const memories = entries.filter((entry): entry is { name: string; content: string, isDirectory: boolean } => Boolean(entry)).map(({ name, content, isDirectory }) => {
+      const openingTag = isDirectory ? `<directory name='${name}'>` : `<file name='${name}'>`
+      const closingTag = isDirectory ? `</directory>` : `</file>`
       return indentNicely`
-        ### ${name}
-        ${content}
+        ${openingTag}
+          ${content}
+        ${closingTag}
       `
     })
 
     if (memories.length > 0) {
       log("memories of files already explored:", memories)
       workingMemory = workingMemory.withMonologue(indentNicely`
-        ## ${workingMemory.soulName} remembers already reading the following files in this directory:
+        ## ${workingMemory.soulName} remembers looking at the following files/directories in the current working directory:
         ${memories.join("\n\n")}
       `)
 
@@ -103,42 +107,53 @@ const exploreFilesystem: MentalProcess = async ({ workingMemory }) => {
       set(cwd, takeaway)
     }
 
-
   }
 
   const [withMonologue, monologue] = await internalMonologue(
     workingMemory,
-    `What is ${workingMemory.soulName}'s feelings after reading that list of files? How do these files relate to their goal?`,
+    indentNicely`
+      What does ${workingMemory.soulName} want to do after seeing this list of files?
+    `,
     {
       model: BIG_MODEL,
     }
   )
 
-  log("making a comment")
-  const [withDialog, resp] = await spokenDialog(
+  log("monologue: ", monologue)
+
+  const [withDialog, stream, resp] = await spokenDialog(
     withMonologue,
-    `${workingMemory.soulName} thinks out loud about what they are seeing.`,
-    { model: BIG_MODEL }
+    `${workingMemory.soulName} thinks out loud about what they are seeing, and what they are feeling.`,
+    { model: BIG_MODEL, stream: true }
   );
-  speak(resp);
+  speak(stream);
 
-  await updateNotes(withDialog)
-
-  const [toolMemory, toolChoice, args] = await toolChooser(withDialog, tools)
+  const [, [toolMemory, toolChoice, args]] = await Promise.all([
+    updateNotes(withDialog),
+    toolChooser(withDialog, tools)
+  ])
 
   log("Tool choice: ", toolChoice, "Args: ", args)
   if (toolChoice === "openInEditor") {
     return [toolMemory, readsAFile]
   }
 
-  // strip off the actual list of files
-  const cleanedMemory = withDialog
-    .withMonologue(indentNicely`
-      After looking at the list of files and thinking
-      > ${monologue}
-      ${workingMemory.soulName} decided to call the tool: ${toolChoice} with the argument ${JSON.stringify(args)}.
-    `)
-
+  const cleanedMemory = workingMemory.concat([
+    {
+      role: ChatMessageRoleEnum.Assistant,
+      content: indentNicely`
+        Philip said: ${await resp}
+      `
+    },
+    {
+      role: ChatMessageRoleEnum.Assistant,
+      content: indentNicely`
+        After looking at the list of files and thinking
+        > ${monologue}
+        ${workingMemory.soulName} decided to call the tool: ${toolChoice} with the argument ${JSON.stringify(args)}.
+      `
+    }
+  ])
 
   if (toolChoice === "stop") {
     return [cleanedMemory, chats, { executeNow: true }]
