@@ -79,12 +79,25 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
 
   if (["edited", "failed to edit"].includes(invokingPerception?.action || "")) {
     log("returning to readsAFile from an edit, summarizing")
+    if (invokingPerception?.action === "failed to edit") {
+      let fixIt: string;
+      [workingMemory, fixIt] = await instruction(
+        workingMemory,
+        indentNicely`
+          Please write a 1-3 sentence description of what Philip would do to get around this error. Sometimes Philip would prefer to just file a ticket, sometimes he'd like to make a smaller change, or maybe just fix what he wrote.
+        `,
+        { model: BIG_MODEL }
+      )
+
+      log("potential fix: ", fixIt)
+    }
+
     workingMemory = await summarizesConversation({ workingMemory })
   }
 
   if (invokingPerception?._metadata?.screen) {
     workingMemory = workingMemory.withMonologue(indentNicely`
-      ${workingMemory.soulName} used an editor to open '${cwd}/${fileName}'. The editor shows up to 100 lines of the file at a time.
+      ${workingMemory.soulName} has '${cwd}/${fileName}' open in his editor.
       
       ## Editor Screen
       ${screen}
