@@ -11,15 +11,9 @@ import summarizesConversation from "../cognitiveFunctions/summarizeConversation.
 import { BIG_MODEL, FAST_MODEL } from "../lib/models.js";
 
 const tools: ToolPossibilities = {
-  "pageUp": {
-    description: "Page up in the current file.",
-  },
-  "pageDown": {
-    description: "Page down in the current file.",
-  },
   "edit": {
     description: indentNicely`
-      Edit a section of the open file.
+      Edit a section of the open file. Philip loves this tool, it's fun.
       Philip provides the start and end lines to the edit, and any commentary on why he wants to edit.
     `,
     params: z.object({
@@ -27,6 +21,12 @@ const tools: ToolPossibilities = {
       end: z.number().describe("ending line number."),
       commentary: z.string().optional().describe("Why does philip want to make this edit?")
     })
+  },
+  "pageUp": {
+    description: "Page up in the current file.",
+  },
+  "pageDown": {
+    description: "Page down in the current file.",
   },
   "exit": {
     description: "Exit reading the current file",

@@ -69,7 +69,7 @@ export class SoulSupport {
       const timeoutId = setTimeout(() => {
         console.error("mp3 playback timeout, ignoring")
         resolve()
-      }, 10_000)
+      }, 8_000)
 
       player().play("speaking.mp3", (err) => {
         console.log("mp3 complete")
@@ -171,7 +171,23 @@ export class SoulSupport {
   async openInEditor(evt: ActionEvent) {
     log("on read event", await evt.content(), evt._metadata)
 
-    const fileReader = await this.fileSystem.openInEditor(evt._metadata?.file as string)
+    const fileName = evt._metadata?.file as string
+
+    if (fileName.trim() === ".env") {
+      return  this.soul.dispatch({
+        name: "Philip",
+        action: "readFile",
+        content: `Philip tried to open '${evt._metadata?.file}' in the editor, but was denied access.`,
+        _metadata: {
+          cwd: this.fileSystem.cwd,
+          fileName: evt._metadata?.file as string,
+          screen: "access denied",
+          largeChunk: "access denied"
+        }
+      })
+    }
+
+    const fileReader = await this.fileSystem.openInEditor(fileName)
     this.reader = fileReader
 
     await this.waitForSpeaking()
