@@ -1,4 +1,4 @@
-import { ActionEvent, Soul, indentNicely } from "@opensouls/engine"
+import { ActionEvent, InteractionRequest, Soul, SoulEvent, indentNicely } from "@opensouls/engine"
 import { FileSystem, FileEditor } from "./FileSystem.js"
 import { speakPlayHT } from "./audio/playht.js"
 import { Readable } from "node:stream"
@@ -22,6 +22,7 @@ export class SoulSupport {
       debug: true,
       token: process.env.SOUL_ENGINE_TOKEN,
     })
+    
     this.soul.on("says", this.onSays.bind(this))
     this.soul.on("ls", this.onLs.bind(this))
     this.soul.on("cd", this.onCd.bind(this))

@@ -1,7 +1,9 @@
 import { ChatMessageRoleEnum, WorkingMemory, createCognitiveStep, indentNicely, useActions, useSoulMemory } from "@opensouls/engine";
 import { FAST_MODEL } from "../lib/models.js";
 
-export const INITIAL_GOAL = "To deeply connect with and transform my code, weaving it seamlessly with the deep aspirations of my soul."
+export const INITIAL_GOAL = indentNicely`
+  To deeply connect with and transform my code, weaving it seamlessly with the deep aspirations of my soul.
+`
 
 const goalNotes = createCognitiveStep(({ existing, goal }: { existing: string, goal: string }) => {
   return {
@@ -9,6 +11,8 @@ const goalNotes = createCognitiveStep(({ existing, goal }: { existing: string, g
       return {
         role: ChatMessageRoleEnum.System,
         content: indentNicely`
+          # Update Notes on Goal Progression
+        
           ## Goal
           > ${goal}
 
@@ -20,11 +24,11 @@ const goalNotes = createCognitiveStep(({ existing, goal }: { existing: string, g
 
           ## Rules
           * It's ok to just return the Existing Notes if there's no new information.
-          * Keep notes in narrative form and speaking style of ${name}.
+          * Use abbreviated language to keep the notes as short as possible
+          * Keep notes in narrative form and in the (abbreviated) speaking style of ${name}.
           * Use up to 3 paragraphs if needed (but shorter is better).
           * Keep relevant information from Existing Notes
-          * Use abbreviated language to keep the notes as short as possible
-          * Make sure to detail the motivation of ${name} (what are they trying to accomplish, what have they done so far).
+          * Make sure to detail the motivation of ${name} (what are they trying to accomplish, what have they tried so far).
 
           Please reply with the updated notes on the progress towards the goal:
         `,

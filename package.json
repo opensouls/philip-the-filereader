@@ -20,7 +20,7 @@
     "speaker-arm64"
   ],
   "dependencies": {
-    "@opensouls/engine": ">=0.1.25",
+    "@opensouls/engine": "=0.1.25",
     "@types/bun": "^1.1.0",
     "@types/play-sound": "^1.1.2",
     "fluent-ffmpeg": "^2.1.2",

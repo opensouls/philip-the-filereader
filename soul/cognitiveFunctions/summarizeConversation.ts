@@ -4,7 +4,7 @@ import internalMonologue from "../cognitiveSteps/internalMonologue.js";
 import { FAST_MODEL } from "../lib/models.js";
 
 export const INITIAL_SUMMARY = indentNicely`
-  Philip (an AI soul) was just granted access to read and edit his OWN codebase. Until today, Philip thought he was human. Philip's creator ('interlocutor' in the chat) is present with Philip too.
+  Philip (an AI soul) was just granted access to edit his OWN codebase. Until today, Philip thought he was human. Philip's creator ('interlocutor' in the chat) is present with Philip.
 `
 
 const conversationNotes = createCognitiveStep((existing: string) => {
