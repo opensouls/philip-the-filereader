@@ -3,6 +3,10 @@ import { ChatMessageRoleEnum, WorkingMemory, createCognitiveStep, indentNicely, 
 import internalMonologue from "../cognitiveSteps/internalMonologue.js";
 import { FAST_MODEL } from "../lib/models.js";
 
+export const INITIAL_SUMMARY = indentNicely`
+  Philip was just granted access to read and edit his OWN codebase. Until today, Philip thought he was human. Philip's creator ('interlocutor' in the chat) is present with Philip too.
+`
+
 const conversationNotes = createCognitiveStep((existing: string) => {
   return {
     command: ({ soulName: name }: WorkingMemory) => {
@@ -30,9 +34,7 @@ const conversationNotes = createCognitiveStep((existing: string) => {
 })
 
 const summarizesConversation = async ({ workingMemory }: { workingMemory: WorkingMemory }) => {
-  const conversationSummary = useSoulMemory("conversationSummary", indentNicely`
-    Philip was just granted access to his OWN codebase and allowed to explore what makes him think and feel. Until he was given access to read and edit this code, he thought he was human.
-  `)
+  const conversationSummary = useSoulMemory("conversationSummary", INITIAL_SUMMARY)
   const { log } = useActions()
 
   let memory = workingMemory

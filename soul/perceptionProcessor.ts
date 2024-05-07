@@ -1,4 +1,5 @@
 import { ChatMessageRoleEnum, PerceptionProcessor, indentNicely, useSoulMemory } from "@opensouls/engine"
+import { INITIAL_SUMMARY } from "./cognitiveFunctions/summarizeConversation.js";
 
 // This is the default percpetion processor extracted from the soul engine itself.
 // if you do not specify a perception processor in your soul, then this is what's used.
@@ -11,9 +12,7 @@ const DEFAULT_PREMONITION = "remembered its time to"
 
 const defaultPerceptionProcessor: PerceptionProcessor = async ({ perception, workingMemory, currentProcess }) => {
   const notes = useSoulMemory("notes", "Just started")
-  const conversationSummary = useSoulMemory("conversationSummary", indentNicely`
-    Philip's creator (present in the chat) just granted Philip access to his OWN codebase and allowed to explore and edit what makes Philip think and feel. Until today, Philip thought he was human.
-  `)
+  const conversationSummary = useSoulMemory("conversationSummary", INITIAL_SUMMARY)
 
   const content = perception.internal ?
   `${perception.name} ${perception.premonition || DEFAULT_PREMONITION} ${perception.action} ${perception.content}` :
