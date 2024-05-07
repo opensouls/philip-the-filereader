@@ -3,7 +3,8 @@ import { FileSystem, FileEditor } from "./FileSystem.js"
 import { speakPlayHT } from "./audio/playht.js"
 import { Readable } from "node:stream"
 import player from "play-sound"
-import { rm } from "node:fs/promises"
+import { rm, exists } from "node:fs/promises"
+import path from "node:path"
 import { log } from "./timedLog.js"
 
 export class SoulSupport {
@@ -174,6 +175,8 @@ export class SoulSupport {
     const fileName = evt._metadata?.file as string
 
     if (fileName.trim() === ".env") {
+      await this.waitForSpeaking()
+
       return  this.soul.dispatch({
         name: "Philip",
         action: "readFile",
@@ -183,6 +186,19 @@ export class SoulSupport {
           fileName: evt._metadata?.file as string,
           screen: "access denied",
           largeChunk: "access denied"
+        }
+      })
+    }
+
+    if (!(await exists(path.join(this.fileSystem.cwd, fileName)))) {
+      await this.waitForSpeaking()
+      return  this.soul.dispatch({
+        name: "Philip",
+        action: "tried to open",
+        content: `'${evt._metadata?.file}' but there is no such file in the current working directory.`,
+        _metadata: {
+          cwd: this.fileSystem.cwd,
+          fileName: evt._metadata?.file as string,
         }
       })
     }
