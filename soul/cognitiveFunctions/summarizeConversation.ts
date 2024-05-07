@@ -2,10 +2,7 @@
 import { ChatMessageRoleEnum, WorkingMemory, createCognitiveStep, indentNicely, useActions, useSoulMemory } from "@opensouls/engine";
 import internalMonologue from "../cognitiveSteps/internalMonologue.js";
 import { FAST_MODEL } from "../lib/models.js";
-
-export const INITIAL_SUMMARY = indentNicely`
-  Philip (an AI soul) was just granted access to edit his OWN codebase. Until given access to his code, Philip thought he was human. Philip's creator ('interlocutor' in the chat) is present with Philip.
-`
+import { INITIAL_SUMMARY } from "../lib/initialStates.js";
 
 const conversationNotes = createCognitiveStep((existing: string) => {
   return {

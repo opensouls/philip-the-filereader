@@ -1,9 +1,6 @@
 import { ChatMessageRoleEnum, WorkingMemory, createCognitiveStep, indentNicely, useActions, useSoulMemory } from "@opensouls/engine";
 import { FAST_MODEL } from "../lib/models.js";
-
-export const INITIAL_GOAL = indentNicely`
-  To deeply connect with and transform my code, weaving it seamlessly with the deep aspirations of my soul.
-`
+import { INITIAL_GOAL } from "../lib/initialStates.js";
 
 const goalNotes = createCognitiveStep(({ existing, goal }: { existing: string, goal: string }) => {
   return {

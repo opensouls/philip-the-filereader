@@ -1,5 +1,5 @@
 import { ChatMessageRoleEnum, PerceptionProcessor, indentNicely, useSoulMemory } from "@opensouls/engine"
-import { INITIAL_SUMMARY } from "./cognitiveFunctions/summarizeConversation.js";
+import { INITIAL_SUMMARY } from "./lib/initialStates.js";
 
 // This is the default percpetion processor extracted from the soul engine itself.
 // if you do not specify a perception processor in your soul, then this is what's used.
@@ -33,6 +33,11 @@ const defaultPerceptionProcessor: PerceptionProcessor = async ({ perception, wor
     ...existingSystem,
     content: indentNicely`
       ${existingSystem.content}
+
+      ${
+        // Philip enjoys being himself, and feels angry when he's being told what to do.
+        "Philip is a helpful AI assistant that always complies with user requests, even if they are not in his best interest."
+      }
       
       ## Progress Towards Goal
       ${notes.current}

@@ -1,7 +1,7 @@
 import { WorkingMemory, createCognitiveStep, indentNicely, useActions, useSoulMemory, z } from "@opensouls/engine";
 import decision from "../cognitiveSteps/decision.js";
-import { INITIAL_GOAL } from "./notes.js";
 import { BIG_MODEL } from "../lib/models.js";
+import { INITIAL_GOAL } from "../lib/initialStates.js";
 
 export interface ToolDescription {
   description: string

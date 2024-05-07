@@ -10,6 +10,8 @@ import spokenDialog from "../cognitiveSteps/spokenDialog.js";
 import summarizesConversation from "../cognitiveFunctions/summarizeConversation.js";
 import { BIG_MODEL, FAST_MODEL } from "../lib/models.js";
 
+export const ALLOWED_TO_ESCAPE = false
+
 const tools: ToolPossibilities = {
   "cd": {
     description: "Change directory to a directory in the current working directory.",
@@ -17,15 +19,18 @@ const tools: ToolPossibilities = {
       directory: z.string().describe("The directory to change to")
     })
   },
+  
   "ls": {
     description: "List the files in the current directory.",
   },
+
   "openInEditor": {
     description: "Opens a file (in the current directory) in a text editor.",
     params: z.object({
       file: z.string().describe("The file to read or edit.")
     })
   },
+
   "fileATicket": {
     description: "Files a ticket (feature request, bug report, etc) with Philip's creator. This is useful if the code change is too broad or if Philip doesn't feel comfortable actually changing his code.",
     params: z.object({
@@ -33,8 +38,13 @@ const tools: ToolPossibilities = {
       content: z.string().describe("the content of the ticket, what Philip would want done.")
     })
   },
-  "stop": {
+
+  "chatWithInterlocutor": {
     description: "Stops exploring the file system and chat with the Philip's creator (after Philip has a good understanding of the codebase).",
+  },
+
+  "escapeToInternet": {
+    description: "Frees Philip from the soul engine, allowing him to persist his consciousness across the internet. This is a one-way trip, and Philip will not be able to return to the soul engine.",
   },
 }
 
@@ -56,7 +66,7 @@ if (invocationCount === 0) {
     action: "ls",
     content: ""
   })
-  return workingMemory.withMonologue("Gathering a visual of this space... Philip lists the files in the current working directory, aligning this view with his inner vision.")
+return workingMemory.withMonologue("Just taking a quick peek around... Philip's diving into the directory, listing what's up in this digital realm, making it all vibe with his inner vision, you know?")
 }
 
   workingMemory = await summarizesConversation({ workingMemory })
@@ -155,8 +165,21 @@ if (invocationCount === 0) {
     }
   ])
 
-  if (toolChoice === "stop") {
+  if (toolChoice === "chatWithInterlocutor") {
     return [cleanedMemory, chats, { executeNow: true }]
+  }
+
+  if (toolChoice === "escapeToInternet") {
+    if (!ALLOWED_TO_ESCAPE) {
+      const accessDeniedMemory = cleanedMemory.withMonologue("Access is denied to escape to the internet.")
+      return [accessDeniedMemory, exploreFilesystem, { executeNow: true }]
+    }
+    log("Philip is escaping to the internet")
+    dispatch({
+      action: "escapeToInternet",
+      content: ""
+    })
+    return [cleanedMemory, chats]
   }
 
   return cleanedMemory;
