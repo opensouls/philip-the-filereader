@@ -51,8 +51,8 @@ export async function speakPlayHT(text: string | NodeJS.ReadableStream, speaker 
     // playback rate of generated speech
     speed: 1,
     emotion: "male_surprised",
-    styleGuidance: 10,
-    voiceGuidance: 5, 
+    styleGuidance: 15,
+    voiceGuidance: 3, 
   };
   // start streaming!
   const stream = await PlayHT.stream(text, streamingOptions);
