@@ -60,28 +60,38 @@ export class SoulSupport {
 
       console.log('writing mp3')
       const writeStream = Bun.file("speaking.mp3").writer()
-      for await (const chunk of mp3Stream) {
+
+      const onData = (chunk: Buffer) => {
         writeStream.write(chunk)
       }
-      writeStream.end()
+      const onEnd = async () => {
+        mp3Stream.off("data", onData)
+        mp3Stream.off("end", onEnd)
+        await writeStream.end()
 
-      console.log("playing mp3")
+        console.log("playing mp3")
+
+        player().play("speaking.mp3", (err) => {
+          console.log("mp3 complete")
+          clearTimeout(timeoutId)
+          if (err) {
+            console.error("error playing mp3, ignoring", err)
+            resolve()
+            return
+          }
+          resolve()
+        })
+      }
+
+      mp3Stream.on("data", onData)
+      mp3Stream.on("end", onEnd)
 
       const timeoutId = setTimeout(() => {
         console.error("mp3 playback timeout, ignoring")
+        mp3Stream.off("data", onData)
+        mp3Stream.off("end", onEnd)
         resolve()
-      }, 9_000)
-
-      player().play("speaking.mp3", (err) => {
-        console.log("mp3 complete")
-        clearTimeout(timeoutId)
-        if (err) {
-          console.error("error playing mp3, ignoring", err)
-          resolve()
-          return
-        }
-        resolve()
-      })
+      }, 12_000)
     })
   }
 
