@@ -105,9 +105,6 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
     }
 
     workingMemory = await summarizesConversation({ workingMemory })
-
-    log("------------------------------- topping after edit return")
-    return workingMemory
   }
 
   if (invokingPerception?._metadata?.screen) {
