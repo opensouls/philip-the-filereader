@@ -52,47 +52,47 @@ export class SoulSupport {
 
   async onSays(evt: ActionEvent) {
     log("on says event", await evt.content(), evt._metadata)
-    // const mp3Stream = await speakPlayHT(Readable.from(evt.stream()))
+    const mp3Stream = await speakPlayHT(Readable.from(evt.stream()))
 
-    // await this.waitForSpeaking()
-    // this.speakingPromise = new Promise<void>(async (resolve, reject) => {
-    //   await rm("speaking.mp3", { force: true })
+    await this.waitForSpeaking()
+    this.speakingPromise = new Promise<void>(async (resolve, reject) => {
+      await rm("speaking.mp3", { force: true })
 
-    //   const timeoutId = setTimeout(() => {
-    //     console.error("mp3 playback timeout, ignoring")
-    //     mp3Stream.off("data", onData)
-    //     mp3Stream.off("end", onEnd)
-    //     resolve()
-    //   }, 10_000)
+      const timeoutId = setTimeout(() => {
+        console.error("mp3 playback timeout, ignoring")
+        mp3Stream.off("data", onData)
+        mp3Stream.off("end", onEnd)
+        resolve()
+      }, 10_000)
 
-    //   console.log('writing mp3')
-    //   const writeStream = Bun.file("speaking.mp3").writer()
+      console.log('writing mp3')
+      const writeStream = Bun.file("speaking.mp3").writer()
 
-    //   const onData = (chunk: Buffer) => {
-    //     writeStream.write(chunk)
-    //   }
-    //   const onEnd = async () => {
-    //     mp3Stream.off("data", onData)
-    //     mp3Stream.off("end", onEnd)
-    //     await writeStream.end()
+      const onData = (chunk: Buffer) => {
+        writeStream.write(chunk)
+      }
+      const onEnd = async () => {
+        mp3Stream.off("data", onData)
+        mp3Stream.off("end", onEnd)
+        await writeStream.end()
 
-    //     console.log("playing mp3")
+        console.log("playing mp3")
 
-    //     player().play("speaking.mp3", (err) => {
-    //       console.log("mp3 complete")
-    //       clearTimeout(timeoutId)
-    //       if (err) {
-    //         console.error("error playing mp3, ignoring", err)
-    //         resolve()
-    //         return
-    //       }
-    //       resolve()
-    //     })
-    //   }
+        player().play("speaking.mp3", (err) => {
+          console.log("mp3 complete")
+          clearTimeout(timeoutId)
+          if (err) {
+            console.error("error playing mp3, ignoring", err)
+            resolve()
+            return
+          }
+          resolve()
+        })
+      }
 
-    //   mp3Stream.on("data", onData)
-    //   mp3Stream.on("end", onEnd)
-    // })
+      mp3Stream.on("data", onData)
+      mp3Stream.on("end", onEnd)
+    })
   }
 
   async onLs(evt: ActionEvent) {
@@ -218,7 +218,7 @@ export class SoulSupport {
     this.soul.dispatch({
       name: "Philip",
       action: "readFile",
-      content: `Philip opened '${evt._metadata?.file}' in the editor.`,
+      content: `'${evt._metadata?.file}' in the editor.`,
       _metadata: {
         cwd: this.fileSystem.cwd,
         fileName: evt._metadata?.file as string,
@@ -242,7 +242,7 @@ export class SoulSupport {
     this.soul.dispatch({
       name: "Philip",
       action: "pagedDown",
-      content: "Philip paged down",
+      content: "in the file.",
       _metadata: {
         cwd: this.reader.cwd,
         fileName: this.reader.relativePath,
@@ -265,7 +265,7 @@ export class SoulSupport {
     this.soul.dispatch({
       name: "Philip",
       action: "pagedUp",
-      content: "Philip paged up",
+      content: "in the file.",
       _metadata: {
         cwd: this.reader.cwd,
         fileName: this.reader.relativePath,

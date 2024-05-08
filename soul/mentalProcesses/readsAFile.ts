@@ -105,15 +105,28 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
     }
 
     workingMemory = await summarizesConversation({ workingMemory })
+
+    log("------------------------------- topping after edit return")
+    return workingMemory
   }
 
   if (invokingPerception?._metadata?.screen) {
-    workingMemory = workingMemory.withMonologue(indentNicely`
-      ${workingMemory.soulName} has '${cwd}/${fileName}' open in his editor.
+    workingMemory = workingMemory.withMemory(
+      {
+        role: ChatMessageRoleEnum.Assistant,
+        name: workingMemory.soulName,
+        content: indentNicely`
+          ${workingMemory.soulName} has '${cwd}/${fileName}' open in his editor.
       
-      ## Editor Screen
-      ${screen}
-    `)
+          ## Editor Screen
+          ${screen}
+        `,
+        metadata: {
+          screen: true,
+          cwd,
+          fileName,
+        }
+      })
   }
 
   const [withMonologue, monologue] = await internalMonologue(

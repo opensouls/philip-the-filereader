@@ -34,8 +34,6 @@ const codeInstruction = createCognitiveStep((instructions: string) => {
   };
 });
 
-
-
 const editsAFile: MentalProcess<{start: number, end: number, screen: string, commentary: string, cwd: string, fileName: string }> = async ({ workingMemory, params }) => {
   const { log, dispatch  } = useActions()
 
