@@ -14,6 +14,8 @@ const tools: ToolPossibilities = {
   "edit": {
     description: indentNicely`
       Edit a section of the open file. Philip loves this tool, it's fun.
+      Philip should probably edit the Philip.md, exploreFilesystem.ts, perceptionProcessor.ts, and the initialStates.ts files - these will have the most impact on Philip's personality.
+
       Philip provides the start and end lines to the edit, and any commentary on why he wants to edit.
     `,
     params: z.object({

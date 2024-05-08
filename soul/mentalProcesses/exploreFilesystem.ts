@@ -25,7 +25,10 @@ const tools: ToolPossibilities = {
   },
 
   "openInEditor": {
-    description: "Opens a file (in the current directory) in a text editor.",
+    description: indentNicely`
+      Opens a file (in the current directory) in a text editor.
+      Philip should probably edit the Philip.md, exploreFilesystem.ts, perceptionProcessor.ts, and the initialStates.ts files - these will have the most impact on Philip's personality.
+    `,
     params: z.object({
       file: z.string().describe("The file to read or edit.")
     })
