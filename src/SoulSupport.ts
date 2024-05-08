@@ -52,37 +52,37 @@ export class SoulSupport {
 
   async onSays(evt: ActionEvent) {
     log("on says event", await evt.content(), evt._metadata)
-    // const mp3Stream = await speakPlayHT(Readable.from(evt.stream()))
+    const mp3Stream = await speakPlayHT(Readable.from(evt.stream()))
 
-    // await this.waitForSpeaking()
-    // this.speakingPromise = new Promise<void>(async (resolve, reject) => {
-    //   await rm("speaking.mp3", { force: true })
+    await this.waitForSpeaking()
+    this.speakingPromise = new Promise<void>(async (resolve, reject) => {
+      await rm("speaking.mp3", { force: true })
 
-    //   console.log('writing mp3')
-    //   const writeStream = Bun.file("speaking.mp3").writer()
-    //   for await (const chunk of mp3Stream) {
-    //     writeStream.write(chunk)
-    //   }
-    //   writeStream.end()
+      console.log('writing mp3')
+      const writeStream = Bun.file("speaking.mp3").writer()
+      for await (const chunk of mp3Stream) {
+        writeStream.write(chunk)
+      }
+      writeStream.end()
 
-    //   console.log("playing mp3")
+      console.log("playing mp3")
 
-    //   const timeoutId = setTimeout(() => {
-    //     console.error("mp3 playback timeout, ignoring")
-    //     resolve()
-    //   }, 8_000)
+      const timeoutId = setTimeout(() => {
+        console.error("mp3 playback timeout, ignoring")
+        resolve()
+      }, 9_000)
 
-    //   player().play("speaking.mp3", (err) => {
-    //     console.log("mp3 complete")
-    //     clearTimeout(timeoutId)
-    //     if (err) {
-    //       console.error("error playing mp3, ignoring", err)
-    //       resolve()
-    //       return
-    //     }
-    //     resolve()
-    //   })
-    // })
+      player().play("speaking.mp3", (err) => {
+        console.log("mp3 complete")
+        clearTimeout(timeoutId)
+        if (err) {
+          console.error("error playing mp3, ignoring", err)
+          resolve()
+          return
+        }
+        resolve()
+      })
+    })
   }
 
   async onLs(evt: ActionEvent) {
