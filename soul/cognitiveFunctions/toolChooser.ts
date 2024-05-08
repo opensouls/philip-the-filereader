@@ -1,4 +1,4 @@
-import { WorkingMemory, createCognitiveStep, indentNicely, useActions, useSoulMemory, z } from "@opensouls/engine";
+import { ChatMessageRoleEnum, WorkingMemory, createCognitiveStep, indentNicely, useActions, useSoulMemory, z } from "@opensouls/engine";
 import decision from "../cognitiveSteps/decision.js";
 import { BIG_MODEL } from "../lib/models.js";
 import { INITIAL_GOAL } from "../lib/initialStates.js";
@@ -9,6 +9,58 @@ export interface ToolDescription {
 }
 
 export type ToolPossibilities = Record<string, ToolDescription>
+
+
+const chooseTool = createCognitiveStep(({ choices, goal }: { goal: string, choices: ToolPossibilities }) => {
+  const params = z.object({
+    decision: z.nativeEnum(Object.keys(choices) as unknown as z.EnumLike).describe(`The name of the tool chosen.`)
+  });
+
+  return {
+    schema: params,
+    command: (workingMemory: WorkingMemory) => {
+      const name = workingMemory.soulName
+
+      const toolStrings = Object.entries(choices).map(([key, value]) => indentNicely`
+        <tool name="${key}">
+          ${value.description}
+        </tool>
+      `).concat([
+        indentNicely`
+          <tool name="none">
+            Do nothing, keep going.
+          </tool>
+        `
+      ])
+
+      return {
+        role: ChatMessageRoleEnum.System,
+        name: name,
+        content: indentNicely`
+          ## ${workingMemory.soulName} chooses a tool
+        
+          ### Goal
+          ${goal}
+        
+          ### Tools
+          ${workingMemory.soulName} is trying to make progress on their goal. They have a few tools at their disposal:
+          ${toolStrings.join("\n")}
+          
+          ${workingMemory.soulName} decides which tool to use.
+          If ${workingMemory.soulName} does not want to use any of those tools, then choose "none".
+        `
+      };
+    },
+    postProcess: async (memory: WorkingMemory, response: z.infer<typeof params>) => {
+      const newMemory = {
+        role: ChatMessageRoleEnum.Assistant,
+        content: `${memory.soulName} chose the tool: "${response.decision.toString()}"`
+      };
+      return [newMemory, response.decision.toString()];
+    }
+  }
+});
+
 
 /**
  * Allows a soul to choose from a list of available tools or opt to not use any tool.
@@ -25,28 +77,10 @@ export const toolChooser = async (workingMemory: WorkingMemory, possibilities: T
 
   log("Choosing a tool")
   // first just decide which tool to us.
-  const [, toolChoice] = await decision(
+  const [, toolChoice] = await chooseTool(
     workingMemory,
-    {
-      description: indentNicely`
-        ## ${workingMemory.soulName} chooses a tool
-
-        ### Goal
-        ${goal.current}
-
-        ### Tools
-        ${workingMemory.soulName} is trying to make progress on their goal. They have a few tools at their disposal:
-        ${Object.entries(possibilities).map(([key, value]) => `* ${key}: ${value.description}`).join("\n")}
-        * none: Do nothing, keep going.
-        
-        ${workingMemory.soulName} decides which tool to use.
-        If ${workingMemory.soulName} does not want to use any of those tools, then choose "none".
-      `,
-      choices: Object.keys(possibilities),
-    },
-    {
-      model: BIG_MODEL
-    }
+    { goal: goal.current, choices: possibilities },
+    { model: BIG_MODEL }
   )
 
   if (toolChoice === "none") {
@@ -67,7 +101,7 @@ export const toolChooser = async (workingMemory: WorkingMemory, possibilities: T
           ## Description of ${toolChoice}
           ${possibilities[toolChoice].description}
 
-          Please decide on the arguments to call for the tool.
+          Please decide on the arguments to use when calling the tool.
         `,
         schema: possibilities[toolChoice].params,
       }
