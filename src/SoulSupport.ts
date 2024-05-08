@@ -62,8 +62,9 @@ export class SoulSupport {
         console.error("mp3 playback timeout, ignoring")
         mp3Stream.off("data", onData)
         mp3Stream.off("end", onEnd)
+        // mp3Stream
         resolve()
-      }, 10_000)
+      }, 15_000)
 
       console.log('writing mp3')
       const writeStream = Bun.file("speaking.mp3").writer()

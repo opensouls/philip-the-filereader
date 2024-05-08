@@ -56,5 +56,5 @@ export async function speakPlayHT(text: string | NodeJS.ReadableStream, speaker 
   };
   // start streaming!
   const stream = await PlayHT.stream(text, streamingOptions);
-  return Readable.from(stream)
+  return stream
 }
