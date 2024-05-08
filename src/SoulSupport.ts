@@ -199,6 +199,7 @@ export class SoulSupport {
         _metadata: {
           cwd: this.fileSystem.cwd,
           fileName: evt._metadata?.file as string,
+          missingFile: true,
         }
       })
     }

@@ -42,13 +42,18 @@ const tools: ToolPossibilities = {
 }
 
 const readsAFile: MentalProcess = async ({ workingMemory }) => {
-  const { speak, log  } = useActions()
+  const { speak, log, dispatch  } = useActions()
   const { invokingPerception } = usePerceptions()
   const { set } = useSoulStore()
 
   const { cwd, fileName } = invokingPerception!._metadata! as { cwd: string, fileName: string }
 
   const screen = invokingPerception?._metadata?.screen || ""
+
+  if (invokingPerception?._metadata?.missingFile) {
+    // if the file was missing then we shouldn't be in this mentalProcess, and instead should go up to the explore
+    return [workingMemory, exploreFilesystem, { executeNow: true }]
+  }
 
   if (invokingPerception?.action === "readFile") {
     // this is the whole file, so should only come through as a summary to the soul.

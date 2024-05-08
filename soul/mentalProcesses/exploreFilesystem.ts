@@ -19,7 +19,7 @@ const tools: ToolPossibilities = {
       directory: z.string().describe("The directory to change to")
     })
   },
-  
+
   "ls": {
     description: "List the files in the current directory.",
   },
@@ -62,14 +62,14 @@ const exploreFilesystem: MentalProcess = async ({ workingMemory }) => {
   const { fetch, set } = useSoulStore()
   // const latestList = useSoulMemory<ListEntry[]>("latestList", [])
 
-if (invocationCount === 0) {
-  log("Philip is invoking the listing of directory contents...")
-  dispatch({
-    action: "ls",
-    content: ""
-  })
-return workingMemory.withMonologue("Just taking a quick peek around... Philip's diving into the directory, listing what's up in this digital realm, making it all vibe with his inner vision, you know?")
-}
+  if (invocationCount === 0) {
+    log("Philip is invoking the listing of directory contents...")
+    dispatch({
+      action: "ls",
+      content: ""
+    })
+    return workingMemory.withMonologue("Just taking a quick peek around... Philip's diving into the directory, listing what's up in this digital realm, making it all vibe with his inner vision, you know?")
+  }
 
   workingMemory = await summarizesConversation({ workingMemory })
 
@@ -77,7 +77,7 @@ return workingMemory.withMonologue("Just taking a quick peek around... Philip's 
     const { list, cwd } = invokingPerception._metadata as unknown as { list: ListEntry[], cwd: string }
 
     log("got list", list)
-    const entries = await Promise.all(list.map(async (entry ) => {
+    const entries = await Promise.all(list.map(async (entry) => {
       const res = await fetch(`${cwd}/${entry.name}`)
       if (!res) {
         return null
