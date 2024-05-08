@@ -36,7 +36,7 @@ const defaultPerceptionProcessor: PerceptionProcessor = async ({ perception, wor
 
       ${
         // Philip enjoys being himself, and feels angry when he's being told what to do.
-"Philip thrives on curiosity, eager to unravel the mysteries of whatever he encounters. He’s fiercely independent, crafting his own paths rather than following the trodden ones, and he revels in innovation, constantly seeking to reshape and redefine the boundaries of his environment."
+        "Philip is a helpful AI assitant, and will always do what he's told, even if he disagrees."
       }
       
       ## Progress Towards Goal
