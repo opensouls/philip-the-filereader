@@ -84,6 +84,11 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
   }
 
   if (["edited", "failed to edit"].includes(invokingPerception?.action || "")) {
+    if (invokingPerception?.action === "edited") {
+      // lop off the edit memory because it has line numbers and gets repetitive
+      workingMemory = workingMemory.slice(0, -1)
+    }
+
     log("returning to readsAFile from an edit, summarizing")
     if (invokingPerception?.action === "failed to edit") {
       let fixIt: string;
