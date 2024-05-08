@@ -58,6 +58,13 @@ export class SoulSupport {
     this.speakingPromise = new Promise<void>(async (resolve, reject) => {
       await rm("speaking.mp3", { force: true })
 
+      const timeoutId = setTimeout(() => {
+        console.error("mp3 playback timeout, ignoring")
+        mp3Stream.off("data", onData)
+        mp3Stream.off("end", onEnd)
+        resolve()
+      }, 10_000)
+
       console.log('writing mp3')
       const writeStream = Bun.file("speaking.mp3").writer()
 
@@ -85,13 +92,6 @@ export class SoulSupport {
 
       mp3Stream.on("data", onData)
       mp3Stream.on("end", onEnd)
-
-      const timeoutId = setTimeout(() => {
-        console.error("mp3 playback timeout, ignoring")
-        mp3Stream.off("data", onData)
-        mp3Stream.off("end", onEnd)
-        resolve()
-      }, 12_000)
     })
   }
 
@@ -183,10 +183,9 @@ export class SoulSupport {
     log("on read event", await evt.content(), evt._metadata)
 
     const fileName = evt._metadata?.file as string
+    await this.waitForSpeaking()
 
     if (fileName.trim() === ".env") {
-      await this.waitForSpeaking()
-
       return  this.soul.dispatch({
         name: "Philip",
         action: "readFile",
@@ -201,7 +200,6 @@ export class SoulSupport {
     }
 
     if (!(await exists(path.join(this.fileSystem.cwd, fileName)))) {
-      await this.waitForSpeaking()
       return  this.soul.dispatch({
         name: "Philip",
         action: "tried to open",
@@ -216,8 +214,6 @@ export class SoulSupport {
 
     const fileReader = await this.fileSystem.openInEditor(fileName)
     this.reader = fileReader
-
-    await this.waitForSpeaking()
 
     this.soul.dispatch({
       name: "Philip",
@@ -264,6 +260,7 @@ export class SoulSupport {
     const content = this.reader.pageUp()
 
     await this.waitForSpeaking()
+    
     log('shipping page up')
     this.soul.dispatch({
       name: "Philip",
