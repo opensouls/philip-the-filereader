@@ -9,6 +9,7 @@ import spokenDialog from "../cognitiveSteps/spokenDialog.js";
 import editsAFile from "./editsAFile.js";
 import summarizesConversation from "../cognitiveFunctions/summarizeConversation.js";
 import { BIG_MODEL, FAST_MODEL } from "../lib/models.js";
+import { removeScreens } from "../lib/removeScreens.js";
 
 const tools: ToolPossibilities = {
   "edit": {
@@ -149,7 +150,7 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
     {
       role: ChatMessageRoleEnum.Assistant,
       content: indentNicely`
-        After looking at the list of files and thinking
+        After looking at the open file and thinking
         > ${monologue}
         ${workingMemory.soulName} decided to call the tool: ${toolChoice} with the argument ${JSON.stringify(args)}.
       `
@@ -162,7 +163,7 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
 
     log("edits a file", cwd, fileName, start, end, commentary)
     
-    return [cleanedMemory, editsAFile, { params: { start, end, commentary, screen }, executeNow: true }]
+    return [cleanedMemory, editsAFile, { params: { start, end, commentary, screen, cwd, fileName }, executeNow: true }]
   }
 
   if (toolChoice === "exit") {
@@ -182,7 +183,7 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
     log("takeaway: ", takeaway)
     set(`${cwd}/${fileName}`, takeaway)
 
-    return [cleanedMemory, exploreFilesystem, { executeNow: true }]
+    return [removeScreens(cleanedMemory.slice(-1).withMonologue(`Philip closed the editor.`)), exploreFilesystem, { executeNow: true }]
   }
 
   return cleanedMemory;

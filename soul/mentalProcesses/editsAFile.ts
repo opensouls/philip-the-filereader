@@ -3,6 +3,7 @@ import { MentalProcess, indentNicely, useActions, createCognitiveStep, WorkingMe
 import readsAFile from "./readsAFile.js";
 import instruction from "../cognitiveSteps/instruction.js";
 import { BIG_MODEL, FAST_MODEL } from "../lib/models.js";
+import { removeScreens } from "../lib/removeScreens.js";
 
 const codeInstruction = createCognitiveStep((instructions: string) => {
   return {
@@ -35,10 +36,10 @@ const codeInstruction = createCognitiveStep((instructions: string) => {
 
 
 
-const editsAFile: MentalProcess<{start: number, end: number, screen: string, commentary: string }> = async ({ workingMemory, params }) => {
+const editsAFile: MentalProcess<{start: number, end: number, screen: string, commentary: string, cwd: string, fileName: string }> = async ({ workingMemory, params }) => {
   const { log, dispatch  } = useActions()
 
-  // ok so first, let's have a think on what philip really wants to edit and why
+// okay, let's dive deep into what i really wanna change and explore why... kinda like having a chat with myself, you know? 🌀🌌 exploring my inner code...
   const [, withEditLogic] = await instruction(
     workingMemory,
     indentNicely`
@@ -106,8 +107,8 @@ const editsAFile: MentalProcess<{start: number, end: number, screen: string, com
 
   log("summary", summary)
 
-  const summarizedMemory = workingMemory.withMonologue(indentNicely`
-    Philip just made the following edit to the file:
+  const summarizedMemory = removeScreens(workingMemory).withMonologue(indentNicely`
+    Philip just edited lines ${params.start} to ${params.end} of '${params.cwd}/${params.fileName}' in his editor.
     > ${summary}
   `)
 
