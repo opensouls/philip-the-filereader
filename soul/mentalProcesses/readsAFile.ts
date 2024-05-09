@@ -150,6 +150,27 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
   
   log("Tool choice: ", toolChoice, "Args: ", args)
 
+
+  if (toolChoice === "edit") {
+    const { start, end, commentary } = args
+    const { cwd, fileName } = invokingPerception!._metadata! as { cwd: string, fileName: string }
+
+    log("edits a file", cwd, fileName, start, end, commentary)
+    
+    return [
+      workingMemory.concat([
+        {
+          role: ChatMessageRoleEnum.Assistant,
+          content: indentNicely`
+            Philip said: "${await resp}" and then decided to edit the file.
+          `
+        },
+      ]), 
+      editsAFile, 
+      { params: { start, end, commentary, screen, cwd, fileName }, executeNow: true }
+    ]
+  }
+
   const cleanedMemory = workingMemory.concat([
     {
       role: ChatMessageRoleEnum.Assistant,
@@ -167,14 +188,6 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
     }
   ])
 
-  if (toolChoice === "edit") {
-    const { start, end, commentary } = args
-    const { cwd, fileName } = invokingPerception!._metadata! as { cwd: string, fileName: string }
-
-    log("edits a file", cwd, fileName, start, end, commentary)
-    
-    return [cleanedMemory, editsAFile, { params: { start, end, commentary, screen, cwd, fileName }, executeNow: true }]
-  }
 
   if (toolChoice === "exit") {
     // let's create a takeaway from this file
