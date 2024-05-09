@@ -16,6 +16,9 @@ const CodeBlock: React.FC<{ lang: string, children: string, startingLine: number
     <SyntaxHighlighter
       language={lang}
       style={darcula}
+      customStyle={{
+        backgroundColor: 'rgb(0,0,0)',
+      }}
       showLineNumbers
       wrapLines
       lineProps={lineProps}

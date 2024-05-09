@@ -1,6 +1,7 @@
 "use client";
 import Editor from "@/components/Editor";
 import Speaking from "@/components/Speaking";
+import Thinking from "@/components/Thinking";
 import { SoulConnectorProvider } from "@/hooks/SoulProvider";
 
 export default function Home() {
@@ -8,13 +9,25 @@ export default function Home() {
     <SoulConnectorProvider>
       <main className="flex min-h-screen flex-row justify-between">
         <div className="w-2/3 h-screen overflow-auto">
-          <Editor />
+          <div className="flex flex-col h-screen p-4">
+            <div className="overflow-auto">
+              <Editor />
+            </div>
+
+          </div>
         </div>
         <div className="w-1/3 p-6">
-          <Speaking />
+          <div className="flex flex-col h-screen">
+            <div className="h-1/2 overflow-auto pl-3">
+              <Speaking />
+            </div>
+            <div className="h-1/2 overflow-auto pl-3">
+              <h2 className="mb-4">Philip&apos;s Mind</h2>
+              <Thinking />
+            </div>
+          </div>
         </div>
       </main>
     </SoulConnectorProvider>
-
   );
 }

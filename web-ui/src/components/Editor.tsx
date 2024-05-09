@@ -35,8 +35,12 @@ const Editor: React.FC = () => {
           const lines = (evt._metadata.screen as string).split("\n");
           const firstLineNumber = parseInt(lines[0].match(/^[\d\s]+:/)![0].trim().replace(':', ''), 10);
           setStartLine(firstLineNumber)
-          const stripped = lines.map((line) => line.replace(/^[\d\s]+:/, "")).join("\n");
+          let stripped = lines.map((line) => line.replace(/^[\d\s]+:/, "")).join("\n");
+          if (stripped.split("\n").length < 25) {
+            stripped += "\n".repeat(22 - stripped.split("\n").length)
+          }
           setEditorCode(stripped);
+          
           setBeginEnd({ begin: firstLineNumber, end: firstLineNumber });
           setShowEditor(true)
           setBeginEnd(null)
@@ -64,17 +68,17 @@ const Editor: React.FC = () => {
 
   if (showEditor) {
     return (
-      <>
+      <div className="pb-4">
         <p>{fileName}</p>
         <CodeBlock lang={fileName.endsWith("md") ? "markdown" : "typescript"} highlightStart={beginEnd?.begin} highlightEnd={beginEnd?.end} startingLine={startLine} >
           {editorCode}
         </CodeBlock>
-      </>
+      </div>
     )
   }
 
   return (
-    <div className="p-4">
+    <div>
       <p className="mb-6">Listing: {fileName}</p>
       <pre>
         {fileList}
