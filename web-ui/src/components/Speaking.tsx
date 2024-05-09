@@ -6,7 +6,7 @@ import { SoulEvent } from "@opensouls/core";
 
 const Speech: React.FC<{mem: SoulEvent, embiggen: boolean}> = ({ mem, embiggen }) => {
   return (
-    <div className={embiggen ? "text-lg mb-8" : "text-sm mb-4"}>
+    <div className={embiggen ? "text-2xl mb-8" : "text-xs mb-4"}>
       <p>{mem.content}</p>
     </div>
   )
@@ -14,7 +14,7 @@ const Speech: React.FC<{mem: SoulEvent, embiggen: boolean}> = ({ mem, embiggen }
 
 const Thought: React.FC<{mem: SoulEvent}> = ({mem}) => {
   return (
-    <div className="text-xs text-[rgb(101,163,13)]">
+    <div className="text-xs text-[rgb(101,163,13)] mb-4">
       <p>{mem.content}</p>
     </div>
   )
@@ -45,13 +45,15 @@ const Speaking: React.FC = () => {
 
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen space-y-6">
       <div className="h-1/2 overflow-auto">
         {speechMessages.map((mem, idx) => {
           return <Speech key={mem._id} mem={mem} embiggen={idx === 0} />
         })}
       </div>
+      <hr />
       <div className="h-1/2 overflow-auto">
+        <h2 className="mb-4">Philip&apos;s Mind</h2>
         {nonSpeechMessages.map((mem, idx) => {
           return <Thought key={mem._id} mem={mem} />
         })}

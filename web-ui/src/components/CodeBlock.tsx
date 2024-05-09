@@ -1,8 +1,8 @@
 import React from 'react';
 import SyntaxHighlighter from 'react-syntax-highlighter';
-import { dracula } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import { darcula } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
-const CodeBlock: React.FC<{ lang: string, children: string, highlightStart?: number, highlightEnd?: number }> = ({ children, lang, highlightStart, highlightEnd }) => {
+const CodeBlock: React.FC<{ lang: string, children: string, startingLine: number, highlightStart?: number, highlightEnd?: number }> = ({ children, lang, highlightStart, highlightEnd, startingLine }) => {
   const lineProps = (lineNumber: number) => {
     if (highlightStart && highlightEnd) {
       if (lineNumber >= highlightStart && lineNumber <= highlightEnd) {
@@ -15,10 +15,11 @@ const CodeBlock: React.FC<{ lang: string, children: string, highlightStart?: num
   return (
     <SyntaxHighlighter
       language={lang}
-      style={dracula}
+      style={darcula}
       showLineNumbers
       wrapLines
       lineProps={lineProps}
+      startingLineNumber={startingLine}
     >
       {children}
     </SyntaxHighlighter>

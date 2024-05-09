@@ -9,21 +9,50 @@ const Editor: React.FC = () => {
   const store = useSyncedStore(soul.store)
   const processedIdx = useRef(0)
 
+  const [showEditor, setShowEditor] = useState<boolean>(false)
+
   const [editorCode, setEditorCode] = useState<string>("")
   const [fileName, setFilename] = useState<string>("")
+  const [fileList, setFileList] = useState("")
+  const [beginEnd, setBeginEnd] = useState<{ begin: number, end: number } | null>(null)
+  const [startLine, setStartLine] = useState<number>(0)
 
   useEffect(() => {
     const stopObserving = observeDeep(store, () => {
+      if (store.events?.length <= processedIdx.current) {
+        processedIdx.current = 0
+        setEditorCode("");
+        setFilename("");
+        setFileList("");
+        setBeginEnd(null);
+        setShowEditor(false);
+      }
       const evtsToProcess = (store.events || []).slice(processedIdx.current)
       processedIdx.current = store.events?.length || 0
 
       for (const evt of evtsToProcess) {
         if (evt._metadata?.screen) {
-          const stripped = (evt._metadata.screen as string).split("\n").map((line) => line.replace(/^[\d\s]+:/, "")).join("\n")
-          setEditorCode(stripped)
+          const lines = (evt._metadata.screen as string).split("\n");
+          const firstLineNumber = parseInt(lines[0].match(/^[\d\s]+:/)![0].trim().replace(':', ''), 10);
+          setStartLine(firstLineNumber)
+          const stripped = lines.map((line) => line.replace(/^[\d\s]+:/, "")).join("\n");
+          setEditorCode(stripped);
+          setBeginEnd({ begin: firstLineNumber, end: firstLineNumber });
+          setShowEditor(true)
+          setBeginEnd(null)
         }
-        if (evt._metadata?.fileName) {
-          setFilename(`${evt._metadata.cwd}/${evt._metadata.fileName}`)
+        if (evt._metadata?.cwd) {
+          setFilename(`${evt._metadata.cwd || ""}/${evt._metadata.fileName || ""}`)
+        }
+
+        if (evt._metadata?.list) {
+          setShowEditor(false)
+          setFileList(evt.content)
+          setBeginEnd(null)
+        }
+
+        if (evt.action === "startsEditing") {
+          setBeginEnd({ begin: evt._metadata?.start as number, end: evt._metadata?.end as number })
         }
       }
     })
@@ -33,15 +62,28 @@ const Editor: React.FC = () => {
     }
   }, [store])
 
+  if (showEditor) {
+    return (
+      <>
+        <p>{fileName}</p>
+        <CodeBlock lang={fileName.endsWith("md") ? "markdown" : "typescript"} highlightStart={beginEnd?.begin} highlightEnd={beginEnd?.end} startingLine={startLine} >
+          {editorCode}
+        </CodeBlock>
+      </>
+    )
+  }
 
   return (
-    <>
-      <p>{fileName}</p>
-      <CodeBlock lang="typescript" >
-        {editorCode}
-      </CodeBlock>
-    </>
+    <div className="p-4">
+      <p className="mb-6">Listing: {fileName}</p>
+      <pre>
+        {fileList}
+      </pre>
+    </div>
+
   )
+
+
 }
 
 export default Editor

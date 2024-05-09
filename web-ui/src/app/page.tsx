@@ -5,15 +5,16 @@ import { SoulConnectorProvider } from "@/hooks/SoulProvider";
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-row justify-between p-24">
-      <SoulConnectorProvider>
-        <div className="w-1/2">
+    <SoulConnectorProvider>
+      <main className="flex min-h-screen flex-row justify-between">
+        <div className="w-2/3 h-screen overflow-auto">
           <Editor />
         </div>
-        <div className="w-1/2 p-6">
+        <div className="w-1/3 p-6">
           <Speaking />
         </div>
-      </SoulConnectorProvider>
-    </main>
+      </main>
+    </SoulConnectorProvider>
+
   );
 }

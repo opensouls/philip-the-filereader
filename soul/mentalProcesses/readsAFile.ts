@@ -155,7 +155,21 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
     const { start, end, commentary } = args
     const { cwd, fileName } = invokingPerception!._metadata! as { cwd: string, fileName: string }
 
-    log("edits a file", cwd, fileName, start, end, commentary)
+    dispatch({
+      name: "Philip",
+      action: "startsEditing",
+      content: indentNicely`
+        > ${commentary}
+      `,
+      _metadata: {
+        cwd,
+        fileName,
+        start,
+        end,
+        screen,
+        commentary,
+      }
+    })
     
     return [
       workingMemory.concat([
