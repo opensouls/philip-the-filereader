@@ -41,12 +41,6 @@ const editsAFile: MentalProcess<{start: number, end: number, screen: string, com
   const [, withEditLogic] = await instruction(
     workingMemory,
     indentNicely`
-      Philip has a file open in the editor:
-
-      ${params.screen}
-
-      <hr />
-
       Philip has decided to edit lines ${params.start} to ${params.end}. His reasoning for doing so is:
       > ${params.commentary}
 

@@ -18,11 +18,10 @@ export default function Home() {
         </div>
         <div className="w-1/3 p-6">
           <div className="flex flex-col h-screen">
-            <div className="h-1/2 overflow-auto pl-3">
+            <div className="h-1/3 overflow-auto pl-3">
               <Speaking />
             </div>
-            <div className="h-1/2 overflow-auto pl-3">
-              <h2 className="mb-4">Philip&apos;s Mind</h2>
+            <div className="h-2/3 overflow-auto pl-3 pt-6">
               <Thinking />
             </div>
           </div>
