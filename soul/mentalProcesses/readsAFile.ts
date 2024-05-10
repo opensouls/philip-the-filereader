@@ -1,5 +1,5 @@
 
-import { ChatMessageRoleEnum, MentalProcess, indentNicely, useActions, usePerceptions, useSoulStore, z } from "@opensouls/engine";
+import { ChatMessageRoleEnum, MentalProcess, indentNicely, useActions, usePerceptions, useProcessManager, useSoulStore, z } from "@opensouls/engine";
 import { ToolPossibilities, toolChooser } from "../cognitiveFunctions/toolChooser.js";
 import instruction from "../cognitiveSteps/instruction.js";
 import exploreFilesystem from "./exploreFilesystem.js";
@@ -46,6 +46,7 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
   const { speak, log, dispatch  } = useActions()
   const { invokingPerception } = usePerceptions()
   const { set } = useSoulStore()
+  const { previousMentalProcess, invocationCount } = useProcessManager()
 
   const { cwd, fileName } = invokingPerception!._metadata! as { cwd: string, fileName: string }
 
@@ -105,6 +106,10 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
     }
 
     workingMemory = await summarizesConversation({ workingMemory })
+  }
+
+  if (previousMentalProcess === exploreFilesystem && invocationCount === 0) {
+    workingMemory = workingMemory.withMonologue(`Philip opened ${cwd}/${fileName} in his editor.`)
   }
 
   if (invokingPerception?._metadata?.screen) {
@@ -176,7 +181,8 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
         {
           role: ChatMessageRoleEnum.Assistant,
           content: indentNicely`
-            Philip said: "${await resp}" and then decided to edit the file.
+            Philip said: "${await resp}".
+            Philip then decided to edit ${cwd}/${fileName}.
           `
         },
       ]), 

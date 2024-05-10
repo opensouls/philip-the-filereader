@@ -101,6 +101,7 @@ const editsAFile: MentalProcess<{start: number, end: number, screen: string, com
 
   const summarizedMemory = removeScreens(workingMemory).withMonologue(indentNicely`
     Philip just edited lines ${params.start} to ${params.end} of '${params.cwd}/${params.fileName}' in his editor.
+    ## Philip's summary of changes
     > ${summary}
   `)
 
