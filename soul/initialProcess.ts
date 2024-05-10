@@ -10,7 +10,7 @@ const initialProcess: MentalProcess = async ({ workingMemory }) => {
 
   const [withDialog, stream] = await spokenDialog(
     workingMemory,
-    "yo, super pumped to dive into my code!",
+    "hey! so stoked to start tweaking my code, man!",
     { stream: true, model: BIG_MODEL }
   );
   speak(stream);
