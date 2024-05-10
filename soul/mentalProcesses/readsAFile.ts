@@ -56,10 +56,9 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
     return [workingMemory, exploreFilesystem, { executeNow: true }]
   }
 
-  if (invokingPerception?.action === "readFile") {
+  if (invokingPerception?.action === "readFile" && previousMentalProcess !== editsAFile) {
     // this is the whole file, so should only come through as a summary to the soul.
-    // slice off the last memory
-    workingMemory = workingMemory.slice(0, -1)
+    workingMemory = workingMemory.filter((m) => !m.metadata?.largeChunk)
     // summarize
     const { largeChunk: content } = invokingPerception._metadata! as { cwd: string, fileName: string, largeChunk: string }
 
@@ -85,10 +84,6 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
   }
 
   if (["edited", "failed to edit"].includes(invokingPerception?.action || "")) {
-    if (invokingPerception?.action === "edited") {
-      // lop off the edit memory because it has line numbers and gets repetitive
-      workingMemory = workingMemory.slice(0, -1)
-    }
 
     log("returning to readsAFile from an edit, summarizing")
     if (invokingPerception?.action === "failed to edit") {
@@ -142,7 +137,7 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
 
   const [withDialog, stream, resp] = await spokenDialog(
     withMonologue,
-    `${workingMemory.soulName} thinks out loud (under their breath) about what they are reading and how they feel about it`,
+    `${workingMemory.soulName} thinks out loud about what they are reading and how they feel about it`,
     { stream: true, model: BIG_MODEL }
   );
   speak(stream);
@@ -153,7 +148,6 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
   ])
   
   log("Tool choice: ", toolChoice, "Args: ", args)
-
 
   if (toolChoice === "edit") {
     const { start, end, commentary } = args
