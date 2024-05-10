@@ -1,5 +1,5 @@
 
-import { MentalProcess, indentNicely, useActions, createCognitiveStep, WorkingMemory, ChatMessageRoleEnum} from "@opensouls/engine";
+import { MentalProcess, indentNicely, useActions, createCognitiveStep, WorkingMemory, ChatMessageRoleEnum, useSoulMemory} from "@opensouls/engine";
 import readsAFile from "./readsAFile.js";
 import instruction from "../cognitiveSteps/instruction.js";
 import { BIG_MODEL, FAST_MODEL } from "../lib/models.js";
@@ -36,8 +36,17 @@ const codeInstruction = createCognitiveStep((instructions: string) => {
 
 const editsAFile: MentalProcess<{start: number, end: number, screen: string, commentary: string, cwd: string, fileName: string }> = async ({ workingMemory, params }) => {
   const { log, dispatch  } = useActions()
+  const lastEdit = useSoulMemory('lastEdit', { start: 0, end: 0 })
 
-// okay, let's dive deep into what i really wanna change and explore why... kinda like having a chat with myself, you know? 🌀🌌 exploring my inner code...
+  // let's stop him from looping for now - there's probably a better way.
+  if (lastEdit.current.start === params.start && lastEdit.current.end === params.end) {
+    workingMemory = workingMemory.withMonologue("Philip thinks: On second thought, I'm happy with those lines as is.")
+    return [workingMemory, readsAFile, { executeNow: true }]
+  }
+
+  lastEdit.current.start = params.start
+  lastEdit.current.end = params.end
+
   const [, withEditLogic] = await instruction(
     workingMemory,
     indentNicely`
