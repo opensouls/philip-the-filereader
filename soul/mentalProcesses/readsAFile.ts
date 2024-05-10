@@ -87,7 +87,11 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
   if (["edited", "failed to edit"].includes(invokingPerception?.action || "")) {
 
     log("returning to readsAFile from an edit, summarizing")
-    if (invokingPerception?.action === "failed to edit") {
+    if (invokingPerception?.action === "edited") {
+      lastEdit.current.start = invokingPerception!._metadata!.start as unknown as number
+      lastEdit.current.end =  invokingPerception!._metadata!.end as unknown as number
+    } else {
+      // this is the failed to edit case.
       let fixIt: string;
       [workingMemory, fixIt] = await instruction(
         workingMemory,
@@ -98,9 +102,6 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
       )
 
       log("potential fix: ", fixIt)
-    } else {
-      lastEdit.current.start = invokingPerception!._metadata!.start as unknown as number
-      lastEdit.current.end =  invokingPerception!._metadata!.end as unknown as number
     }
 
     workingMemory = removeScreens(workingMemory)

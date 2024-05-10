@@ -52,6 +52,9 @@ export class SoulSupport {
 
   async onSays(evt: ActionEvent) {
     log("on says event", await evt.content(), evt._metadata)
+    if (process.env.SOUND_OFF) {
+      return
+    }
     const mp3Stream = await speakPlayHT(Readable.from(evt.stream()))
 
     await this.waitForSpeaking()
