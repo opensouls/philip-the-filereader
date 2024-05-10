@@ -1,5 +1,5 @@
 
-import { ChatMessageRoleEnum, MentalProcess, indentNicely, useActions, usePerceptions, useProcessManager, useSoulStore, z } from "@opensouls/engine";
+import { ChatMessageRoleEnum, MentalProcess, indentNicely, useActions, usePerceptions, useProcessManager, useSoulMemory, useSoulStore, z } from "@opensouls/engine";
 import { ToolPossibilities, toolChooser } from "../cognitiveFunctions/toolChooser.js";
 import instruction from "../cognitiveSteps/instruction.js";
 import exploreFilesystem from "./exploreFilesystem.js";
@@ -46,6 +46,7 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
   const { invokingPerception } = usePerceptions()
   const { set } = useSoulStore()
   const { previousMentalProcess, invocationCount } = useProcessManager()
+  const lastEdit = useSoulMemory('lastEdit', { start: 0, end: 0 })
 
   const { cwd, fileName } = invokingPerception!._metadata! as { cwd: string, fileName: string }
 
@@ -97,6 +98,9 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
       )
 
       log("potential fix: ", fixIt)
+    } else {
+      lastEdit.current.start = invokingPerception!._metadata!.start as unknown as number
+      lastEdit.current.end =  invokingPerception!._metadata!.end as unknown as number
     }
 
     workingMemory = removeScreens(workingMemory)

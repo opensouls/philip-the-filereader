@@ -45,9 +45,6 @@ const editsAFile: MentalProcess<{start: number, end: number, screen: string, com
     return [workingMemory, readsAFile, { executeNow: true }]
   }
 
-  lastEdit.current.start = params.start
-  lastEdit.current.end = params.end
-
   const [, withEditLogic] = await instruction(
     workingMemory,
     indentNicely`

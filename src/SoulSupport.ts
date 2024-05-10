@@ -136,6 +136,8 @@ export class SoulSupport {
           cwd: this.reader.cwd,
           fileName: this.reader.relativePath,
           screen: this.reader.readPage().join("\n"),
+          start,
+          end,
         }
       })
 
@@ -158,6 +160,8 @@ export class SoulSupport {
         cwd: this.reader.cwd,
         fileName: this.reader.relativePath,
         screen: this.reader.readPage().join("\n"),
+        start,
+        end,
       }
     })
   }
