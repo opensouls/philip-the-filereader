@@ -41,6 +41,7 @@ const editsAFile: MentalProcess<{start: number, end: number, screen: string, com
   // let's stop him from looping for now - there's probably a better way.
   if (lastEdit.current.start === params.start && lastEdit.current.end === params.end) {
     workingMemory = workingMemory.withMonologue("Philip thinks: On second thought, I'm happy with those lines as is.")
+    log("SKIPPING THIS EDIT because it's already been done.")
     return [workingMemory, readsAFile, { executeNow: true }]
   }
 

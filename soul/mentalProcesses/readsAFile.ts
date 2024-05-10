@@ -104,7 +104,7 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
       log("potential fix: ", fixIt)
     }
 
-    workingMemory = await summarizesConversation({ workingMemory })
+    workingMemory = removeScreens(workingMemory)
   }
 
   if (previousMentalProcess === exploreFilesystem && invocationCount === 0) {
