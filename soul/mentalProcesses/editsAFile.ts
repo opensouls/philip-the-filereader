@@ -1,9 +1,10 @@
 
-import { MentalProcess, indentNicely, useActions, createCognitiveStep, WorkingMemory, ChatMessageRoleEnum, useSoulMemory} from "@opensouls/engine";
-import readsAFile from "./readsAFile.js";
+import { MentalProcess, indentNicely, useActions, createCognitiveStep, WorkingMemory, ChatMessageRoleEnum, useSoulMemory, usePerceptions } from "@opensouls/engine";
 import instruction from "../cognitiveSteps/instruction.js";
 import { BIG_MODEL, FAST_MODEL } from "../lib/models.js";
 import { removeScreens } from "../lib/removeScreens.js";
+import exploreFilesystem from "./exploreFilesystem.js";
+import summarizesConversation from "../cognitiveFunctions/summarizeConversation.js";
 
 const codeInstruction = createCognitiveStep((instructions: string) => {
   return {
@@ -14,7 +15,7 @@ const codeInstruction = createCognitiveStep((instructions: string) => {
         content: instructions,
       };
     },
-    postProcess: (workingMemory, code ) => {
+    postProcess: (_workingMemory, code) => {
       let stripped = code
       if (stripped.startsWith("```")) {
         stripped = stripped.split("\n").slice(1, -1).join("\n")
@@ -34,15 +35,33 @@ const codeInstruction = createCognitiveStep((instructions: string) => {
   };
 });
 
-const editsAFile: MentalProcess<{start: number, end: number, screen: string, commentary: string, cwd: string, fileName: string }> = async ({ workingMemory, params }) => {
-  const { log, dispatch  } = useActions()
-  const lastEdit = useSoulMemory('lastEdit', { start: 0, end: 0 })
+const editsAFile: MentalProcess<{ start: number, end: number, screen: string, commentary: string, cwd: string, fileName: string }> = async ({ workingMemory, params }) => {
+  const { log, dispatch } = useActions()
+  const { invokingPerception } = usePerceptions()
 
-  // let's stop him from looping for now - there's probably a better way.
-  if (lastEdit.current.start === params.start && lastEdit.current.end === params.end) {
-    workingMemory = workingMemory.withMonologue("Philip thinks: On second thought, I'm happy with those lines as is.")
-    log("SKIPPING THIS EDIT because it's already been done.")
-    return [workingMemory, readsAFile, { executeNow: true }]
+  if (invokingPerception?.action === "edited") {
+    workingMemory = workingMemory.withMonologue(indentNicely`
+      Philip finished editing ${params.fileName} and he's happy with the edits.
+    `)
+    return [
+      await summarizesConversation({ workingMemory: removeScreens(workingMemory) }),
+      exploreFilesystem,
+      { executeNow: true }
+    ]
+  }
+
+  if (invokingPerception?.action === "failed to edit") {
+    // this is the failed to edit case.
+    let fixIt: string;
+    [workingMemory, fixIt] = await instruction(
+      workingMemory,
+      indentNicely`
+          Please write a 1-3 sentence description of what Philip would do to get around this error. Sometimes Philip would prefer to just file a ticket, sometimes he'd like to make a smaller change, or maybe just fix what he wrote.
+        `,
+      { model: BIG_MODEL }
+    )
+
+    log("potential fix: ", fixIt)
   }
 
   const [, withEditLogic] = await instruction(
@@ -59,8 +78,8 @@ const editsAFile: MentalProcess<{start: number, end: number, screen: string, com
   log("ok, here are the changes", withEditLogic)
 
   // next we'll work with a very clean working memory (just the system prompt)
-  const cleanMemory = workingMemory.slice(0,1)
-  
+  const cleanMemory = workingMemory.slice(0, 1)
+
   const [withCode, onlyCode] = await codeInstruction(
     cleanMemory,
     indentNicely`
@@ -106,13 +125,13 @@ const editsAFile: MentalProcess<{start: number, end: number, screen: string, com
 
   log("summary", summary)
 
-  const summarizedMemory = removeScreens(workingMemory).withMonologue(indentNicely`
+  const summarizedMemory = workingMemory.withMonologue(indentNicely`
     Philip just edited lines ${params.start} to ${params.end} of '${params.cwd}/${params.fileName}' in his editor.
     ## Philip's summary of changes
     > ${summary}
   `)
 
-  return [summarizedMemory, readsAFile]
+  return summarizedMemory
 }
 
 export default editsAFile

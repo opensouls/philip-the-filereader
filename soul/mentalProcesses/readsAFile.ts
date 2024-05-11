@@ -7,7 +7,6 @@ import { updateNotes } from "../cognitiveFunctions/notes.js";
 import internalMonologue from "../cognitiveSteps/internalMonologue.js";
 import spokenDialog from "../cognitiveSteps/spokenDialog.js";
 import editsAFile from "./editsAFile.js";
-import summarizesConversation from "../cognitiveFunctions/summarizeConversation.js";
 import { BIG_MODEL, FAST_MODEL } from "../lib/models.js";
 import { removeScreens } from "../lib/removeScreens.js";
 
@@ -46,7 +45,6 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
   const { invokingPerception } = usePerceptions()
   const { set } = useSoulStore()
   const { previousMentalProcess, invocationCount } = useProcessManager()
-  const lastEdit = useSoulMemory('lastEdit', { start: 0, end: 0 })
 
   const { cwd, fileName } = invokingPerception!._metadata! as { cwd: string, fileName: string }
 
@@ -82,29 +80,6 @@ const readsAFile: MentalProcess = async ({ workingMemory }) => {
       Here's what they noticed first about the file:
       ${summary}
     `)
-  }
-
-  if (["edited", "failed to edit"].includes(invokingPerception?.action || "")) {
-
-    log("returning to readsAFile from an edit, summarizing")
-    if (invokingPerception?.action === "edited") {
-      lastEdit.current.start = invokingPerception!._metadata!.start as unknown as number
-      lastEdit.current.end =  invokingPerception!._metadata!.end as unknown as number
-    } else {
-      // this is the failed to edit case.
-      let fixIt: string;
-      [workingMemory, fixIt] = await instruction(
-        workingMemory,
-        indentNicely`
-          Please write a 1-3 sentence description of what Philip would do to get around this error. Sometimes Philip would prefer to just file a ticket, sometimes he'd like to make a smaller change, or maybe just fix what he wrote.
-        `,
-        { model: BIG_MODEL }
-      )
-
-      log("potential fix: ", fixIt)
-    }
-
-    workingMemory = removeScreens(workingMemory)
   }
 
   if (previousMentalProcess === exploreFilesystem && invocationCount === 0) {
