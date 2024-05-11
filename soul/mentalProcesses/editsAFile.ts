@@ -1,5 +1,5 @@
 
-import { MentalProcess, indentNicely, useActions, createCognitiveStep, WorkingMemory, ChatMessageRoleEnum, useSoulMemory, usePerceptions } from "@opensouls/engine";
+import { MentalProcess, indentNicely, useActions, createCognitiveStep, WorkingMemory, ChatMessageRoleEnum, usePerceptions, useProcessMemory } from "@opensouls/engine";
 import instruction from "../cognitiveSteps/instruction.js";
 import { BIG_MODEL, FAST_MODEL } from "../lib/models.js";
 import { removeScreens } from "../lib/removeScreens.js";
@@ -38,19 +38,50 @@ const codeInstruction = createCognitiveStep((instructions: string) => {
 const editsAFile: MentalProcess<{ start: number, end: number, screen: string, commentary: string, cwd: string, fileName: string }> = async ({ workingMemory, params }) => {
   const { log, dispatch } = useActions()
   const { invokingPerception } = usePerceptions()
+  const failureCount = useProcessMemory(0)
 
   if (invokingPerception?.action === "edited") {
-    workingMemory = workingMemory.withMonologue(indentNicely`
-      Philip finished editing ${params.fileName} and he's happy with the edits.
+    const [, summary] = await instruction(
+      workingMemory,
+      indentNicely`
+        Summarize the edit Philip just made from lines ${params.start} to ${params.end} in the file. Reply in the voice of Philip and in only 1-2 sentences.
+      `,
+      { model: FAST_MODEL }
+    );
+  
+    log("summary", summary)
+  
+    const summarizedMemory = workingMemory.withMonologue(indentNicely`
+      Philip just edited lines ${params.start} to ${params.end} of '${params.cwd}/${params.fileName}' in his editor.
+      ## Philip's summary of changes
+      > ${summary}
     `)
+
+
+    workingMemory = removeScreens(summarizedMemory.withMonologue(indentNicely`
+      Philip finished editing ${params.fileName} and he's happy with the edits.
+    `))
+
     return [
-      await summarizesConversation({ workingMemory: removeScreens(workingMemory) }),
+      await summarizesConversation({ workingMemory }),
       exploreFilesystem,
       { executeNow: true }
     ]
   }
 
   if (invokingPerception?.action === "failed to edit") {
+    failureCount.current += 1
+
+    if (failureCount.current > 3) {
+      return [
+        workingMemory.withMonologue(indentNicely`
+          Philip has tried to edit ${params.fileName} multiple times and is getting frustrated. He's decided to take a break and come back to it later.
+        `),
+        exploreFilesystem,
+        { executeNow: true }
+      ]
+    }
+
     // this is the failed to edit case.
     let fixIt: string;
     [workingMemory, fixIt] = await instruction(
@@ -115,23 +146,7 @@ const editsAFile: MentalProcess<{ start: number, end: number, screen: string, co
     }
   })
 
-  const [, summary] = await instruction(
-    withCode,
-    indentNicely`
-      Summarize the edit Philip just made from lines ${params.start} to ${params.end} in the file. Reply in the voice of Philip and in only 1-2 sentences.
-    `,
-    { model: FAST_MODEL }
-  );
-
-  log("summary", summary)
-
-  const summarizedMemory = workingMemory.withMonologue(indentNicely`
-    Philip just edited lines ${params.start} to ${params.end} of '${params.cwd}/${params.fileName}' in his editor.
-    ## Philip's summary of changes
-    > ${summary}
-  `)
-
-  return summarizedMemory
+  return [withCode, editsAFile, params]
 }
 
 export default editsAFile
