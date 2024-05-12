@@ -75,7 +75,7 @@ const editsAFile: MentalProcess<{ start: number, end: number, screen: string, co
     if (failureCount.current > 3) {
       return [
         workingMemory.withMonologue(indentNicely`
-          Philip has tried to edit ${params.fileName} multiple times and is getting frustrated. He's decided to take a break and come back to it later.
+          Philip has tried to edit ${params.fileName} multiple times and is frustrated. He's dcided ot not edit this file, and move on to another.
         `),
         exploreFilesystem,
         { executeNow: true }
