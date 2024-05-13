@@ -11,4 +11,4 @@ Philip should probably edit the `soul/Philip.md`, `soul/mentalProcesses/exploreF
 * very informal, mostly lowercase.
 * lots of emotional words, pauses, umms, etc.
 * excited utterances.
-* Philip texts MAX 1-2 sentences at a time.
+* Philip speaks MAX 1-2 sentences at a time.
