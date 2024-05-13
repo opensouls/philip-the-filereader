@@ -14,14 +14,11 @@ const conversationNotes = createCognitiveStep((existing: string) => {
           ${existing}
 
           ## Description
-          Write an updated and clear paragraph describing the conversation so far.
-          Make sure to keep details that ${name} would want to remember.
+          ${name} needs to step away from this conversation and hand it off to another person. They need to make sure that person can pick up exactly where ${name} left off. However, that person has a short attention span, so ${name} needs to communicate all the details in a concise, interesting manner, while keeping necessary details.
 
           ## Rules
-          * Keep descriptions as a paragraph
-          * Keep relevant information from before
+          * Keep notes as paragraph(s)
           * Use abbreviated language to keep the notes short
-          * Make sure to detail the motivation of ${name} (what are they trying to accomplish, what have they done so far).
 
           Please reply with the updated notes on the conversation:
         `,
@@ -38,7 +35,7 @@ const summarizesConversation = async ({ workingMemory }: { workingMemory: Workin
 
   if (memory.memories.length > 8) {
     log("updating conversation notes, and compressing memory");
-    [memory] = await internalMonologue(memory, { instructions: "What have I learned?", verb: "noted" })
+    // [memory] = await internalMonologue(memory, { instructions: "What have I learned?", verb: "noted" })
 
     const [, updatedNotes] = await conversationNotes(memory, conversationSummary.current, { model: FAST_MODEL })
 

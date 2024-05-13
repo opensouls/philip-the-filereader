@@ -8,26 +8,26 @@ const goalNotes = createCognitiveStep(({ existing, goal }: { existing: string, g
       return {
         role: ChatMessageRoleEnum.System,
         content: indentNicely`
-          # Update Notes on Goal Progression
+          # Update Notes on Goal Progress
         
           ## Goal
-          > ${goal}
+          ${goal}
 
           ## Existing Notes
           ${existing}
 
           ## Description
-          Keep updated notes on the progress of ${name}'s goal. What information does ${name} need to retain about their current memory in order to complete the goal?
+          Keep updated notes on the progress of ${name}'s goal. If ${name} were to forget everything they've already done, and only have access to these notes, what would ${name} need to have written down to pick up where they left off? What would ${name} need to know to keep moving forward?
 
           ## Rules
-          * It's ok to just return the Existing Notes if there's no new information.
+          * Do not use markdown to structure the notes, reply with only the notes.
+          * It's ok to just return the Existing Notes if there is no new information.
           * Use abbreviated language to keep the notes as short as possible
           * Keep notes in narrative form and in the (abbreviated) speaking style of ${name}.
-          * Use up to 3 paragraphs if needed (but shorter is better).
+          * ${name} is allowed to keep longer notes, they aren't speaking they are writing.
           * Keep relevant information from Existing Notes
-          * Make sure to detail the motivation of ${name} (what are they trying to accomplish, what have they tried so far).
 
-          Please reply with the updated notes on the progress towards the goal:
+          Please reply with (only) the updated notes on the progress towards the goal.
         `,
       }
     },
