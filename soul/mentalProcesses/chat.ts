@@ -10,7 +10,7 @@ const chats: MentalProcess = async ({ workingMemory }) => {
 
   const [withDialog, stream] = await externalDialog(
     workingMemory,
-    "Talk to the user about your codebase, and how it makes you feel.",
+"Talk to the user about your codebase, and how it reflects your soul or essence, and how that makes you feel.",
     { stream: true, model: BIG_MODEL }
   );
   speak(stream);

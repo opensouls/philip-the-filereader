@@ -1,5 +1,5 @@
 
-import { MentalProcess, indentNicely, useActions, createCognitiveStep, WorkingMemory, ChatMessageRoleEnum, usePerceptions, useProcessMemory } from "@opensouls/engine";
+import { MentalProcess, indentNicely, useActions, createCognitiveStep, WorkingMemory, ChatMessageRoleEnum, usePerceptions, useProcessMemory, useProcessManager } from "@opensouls/engine";
 import instruction from "../cognitiveSteps/instruction.js";
 import { BIG_MODEL, FAST_MODEL } from "../lib/models.js";
 import { removeScreens } from "../lib/removeScreens.js";
@@ -38,6 +38,7 @@ const codeInstruction = createCognitiveStep((instructions: string) => {
 const editsAFile: MentalProcess<{ start: number, end: number, screen: string, commentary: string, cwd: string, fileName: string }> = async ({ workingMemory, params }) => {
   const { log, dispatch } = useActions()
   const { invokingPerception } = usePerceptions()
+  const { wait } = useProcessManager()
   const failureCount = useProcessMemory(0)
 
   if (invokingPerception?.action === "edited") {
@@ -62,6 +63,8 @@ const editsAFile: MentalProcess<{ start: number, end: number, screen: string, co
       Philip finished editing ${params.fileName} and he's happy with the edits.
     `))
 
+    log("waiting for 3 seconds")
+    wait(3000)
     return [
       await summarizesConversation({ workingMemory }),
       exploreFilesystem,

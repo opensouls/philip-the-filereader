@@ -10,7 +10,7 @@ export default function Home() {
       <main className="flex min-h-screen flex-row justify-between">
         <div className="w-2/3 h-screen overflow-auto">
           <div className="flex flex-col h-screen p-4">
-            <div className="overflow-auto">
+            <div className="overflow-y-auto">
               <Editor />
             </div>
 

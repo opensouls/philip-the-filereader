@@ -41,7 +41,11 @@ const Editor: React.FC = () => {
           }
           setEditorCode(stripped);
           
-          setBeginEnd({ begin: firstLineNumber, end: firstLineNumber });
+          if (evt.action == "edited") {
+            setBeginEnd(null);
+          } else {
+            setBeginEnd({ begin: firstLineNumber, end: firstLineNumber });
+          }
           setShowEditor(true)
           setBeginEnd(null)
         }

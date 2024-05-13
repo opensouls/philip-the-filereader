@@ -1,6 +1,5 @@
 
 import { ChatMessageRoleEnum, WorkingMemory, createCognitiveStep, indentNicely, useActions, useSoulMemory } from "@opensouls/engine";
-import internalMonologue from "../cognitiveSteps/internalMonologue.js";
 import { FAST_MODEL } from "../lib/models.js";
 import { INITIAL_SUMMARY } from "../lib/initialStates.js";
 

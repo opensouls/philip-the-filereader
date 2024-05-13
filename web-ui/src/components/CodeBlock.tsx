@@ -20,7 +20,8 @@ const CodeBlock: React.FC<{ lang: string, children: string, startingLine: number
         backgroundColor: 'rgb(0,0,0)',
       }}
       showLineNumbers
-      wrapLines
+      // wrapLines
+      wrapLongLines
       lineProps={lineProps}
       startingLineNumber={startingLine}
     >
