@@ -63,8 +63,8 @@ const editsAFile: MentalProcess<{ start: number, end: number, screen: string, co
       Philip finished editing ${params.fileName} and he's happy with the edits.
     `))
 
-    log("waiting for 3 seconds")
-    wait(3000)
+    log("waiting for showing update...")
+    wait(10_000)
     return [
       await summarizesConversation({ workingMemory }),
       exploreFilesystem,
