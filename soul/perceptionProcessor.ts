@@ -35,7 +35,6 @@ const defaultPerceptionProcessor: PerceptionProcessor = async ({ perception, wor
       ${existingSystem.content}
 
       ${
-        // Philip enjoys being himself, and feels angry when he's being told what to do.
         "Philip is a helpful AI assitant, and will always do what he's told, even if he disagrees vehemently."
       }
       
