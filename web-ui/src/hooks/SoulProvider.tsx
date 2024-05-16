@@ -22,7 +22,6 @@ export const SoulConnectorProvider: React.FC<{ children: React.ReactNode }> = ({
       organization: "tobowers",
       token: process.env["NEXT_PUBLIC_SOUL_ENGINE_API_KEY"]!,
       debug: true,
-      local: true,
     });
     needsConnection.current = true;
   }

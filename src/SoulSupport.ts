@@ -19,7 +19,6 @@ export class SoulSupport {
       organization: process.env.SOUL_ENGINE_ORG!,
       blueprint: "philip-the-fileman",
       soulId: "reader2",
-      local: true,
       debug: true,
       token: process.env.SOUL_ENGINE_TOKEN,
     })
