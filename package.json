@@ -25,6 +25,7 @@
     "@types/play-sound": "^1.1.2",
     "fluent-ffmpeg": "^2.1.2",
     "play-sound": "^1.1.6",
-    "playht": "^0.9.8"
+    "playht": "^0.9.8",
+    "speaker": "https://github.com/ItsJustMeChris/node-speaker.git"
   }
 }
