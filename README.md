@@ -13,11 +13,23 @@ For voice to work, you'll need a [PlayHT API key](https://play.ht/).
 
 ## Running
 
+Since Philip makes heavy use of the file system, he'll require a Mac (probably linux works too). Philip also uses [Bun](https://bun.sh/) to run.
+
+Signup for the soul engine! https://docs.souls.chat
+
 Update the secrets
 ```bash
 cp .env.example .env
 ```
 
+Run Philip
 ```bash
-bun run scripts/dev.ts
+bun start # will launch the soul engine dev and sync Philip's code
 ```
+
+Visit the url shown in your terminal to get started (say hi to Philip).
+
+
+## Note
+
+Philip *actually* edits your filesystem. He sometimes breaks himself. Make sure you are comfortable in git to rollback the changes he's made.
